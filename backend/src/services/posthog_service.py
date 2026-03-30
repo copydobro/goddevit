@@ -19,15 +19,16 @@ class PostHogService:
         if not self.enabled:
             return
         try:
-            self.ph.capture(distinct_id, event, properties or {})
+            self.ph.capture(event, distinct_id=distinct_id, properties=properties or {})
         except Exception as e:
             logger.error(f"PostHog capture error: {e}")
 
     def identify(self, distinct_id: str, properties: dict = None):
+        """Set person properties (v7: ph.set replaces identify)."""
         if not self.enabled:
             return
         try:
-            self.ph.identify(distinct_id, properties or {})
+            self.ph.set(distinct_id=distinct_id, properties=properties or {})
         except Exception as e:
             logger.error(f"PostHog identify error: {e}")
 
