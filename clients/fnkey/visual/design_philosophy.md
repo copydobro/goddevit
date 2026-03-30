@@ -1,0 +1,18 @@
+# Contact Threshold
+### A Design Philosophy
+
+---
+
+The philosophy of the held moment — when pressing is becoming. The interval between contact and release where potential becomes signal, where silence holds the shape of voice before it exists. This aesthetic is built entirely around that threshold state: not before, not after, but during. The activated instant. The open circuit that is alive precisely because nothing has resolved yet.
+
+Color carries the entire emotional load. Deep near-black as resting potential — a field so dark it reads as the absence of event. Amber as the activation state, borrowed from the oldest signal vocabulary: oscilloscope phosphor, warning instruments, the yellow that unmistakably means *alive*. The amber exists nowhere else in this darkness. When it surfaces, it is the only thing that matters — meticulous in its placement, never casual, never decorative. A single amber dot can reorganize the entire weight of a composition. Every opacity value has been calibrated through iteration until the glow feels physically warm rather than digitally applied. The craftsmanship here is painstaking: each amber element placed as though it will be inspected.
+
+Form borrows the language of technical instruments and makes it compositional. The oscilloscope trace, the frequency bar, the dB scale, the time marker — these are not ornaments but load-bearing structure. They communicate causality: origin, event, consequence. The waveform is the visual center of gravity, and everything else orbits it with the precision of someone who has spent years calibrating instruments. Nothing is approximate. The grid dots have been sized and spaced to be felt rather than seen — present as a ground frequency, not dominant. The scan line texture exists below conscious perception, felt as material weight. This is the accumulated labor of someone at the absolute top of their field, and it shows in every margin.
+
+Typography creates productive tension through deliberate collision. Monospaced typefaces carry data — terminal precision, clinical annotation, the language of machines receiving input. Humanist serifs surface rarely, ghosted and enormous, as the presence of the human act that the machine is processing. When these two typographic registers meet — the Gloock behind the DM Mono, the editorial behind the technical — the result is the same tension as voice being processed by code. Text is severe in its economy: it appears only to anchor what the visual already communicates, and when it appears, it does so with the permanence of etched plate. No sentence exists that a label could replace. No label exists that a graphic could replace.
+
+Scale and composition tell a causal story without narrative. The origin element (the key, the point of contact) lives above. The event element (the waveform, the signal) occupies the center with maximum spatial authority. The consequence elements (spectrum, annotations, metadata) exist below as evidence. The eye follows the causal path without instruction. Breathing space is structural, not decorative — the void between the key and the waveform is the duration of the held interval, made spatial. Every gap has been measured against the philosophical necessity of what it contains. This is the result of meticulously crafted composition: not assembled, but grown through constraint and refinement until no element could be moved without loss.
+
+---
+
+*Output artifacts: oscilloscope-derived waveform composition, amber on near-black, technical annotation overlay, editorial ghost typography. Museum weight. Instrument precision. The product of countless hours labored over with care.*

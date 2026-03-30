@@ -1,0 +1,38 @@
+# Environment — NEVER commit real keys
+.env
+.env.local
+.env.*.local
+
+# Scorecard API keys (client-side but still sensitive)
+apps/gtm_scorecard/config.js
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+*.db
+*.sqlite3
+
+# Node / JS
+node_modules/
+.next/
+.nuxt/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+logs/
