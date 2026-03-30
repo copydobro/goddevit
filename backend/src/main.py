@@ -20,7 +20,10 @@ app.include_router(tracking_router)
 
 @app.on_event("startup")
 async def startup():
-    create_tables()
+    try:
+        create_tables()
+    except Exception as exc:
+        print(f"DB startup warning (tables not created): {exc}")
 
 
 @app.get("/health")
