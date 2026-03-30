@@ -546,3 +546,278 @@ body {
     color: var(--text-dim);
     margin-top: 20px;
 }
+
+/* ─── OFFER SECTIONS ──────────────────────────────────────────── */
+.offer-wrapper { margin-top: 10px; }
+.offer-section { margin-bottom: 4px; }
+
+.offer-divider {
+    color: #3a3a3a;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    margin: 22px 0 10px;
+    letter-spacing: 0.3px;
+}
+
+.offer-topline {
+    color: #ff5555;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.offer-bridge {
+    font-size: 15px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+    line-height: 1.75;
+    margin-bottom: 8px;
+}
+
+.offer-subline {
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    color: #55ff55;
+    margin-top: 8px;
+}
+
+.offer-source {
+    color: #484848;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 6px;
+    font-style: italic;
+}
+
+/* Numbers */
+.offer-numbers { margin: 8px 0; }
+.offer-number-row {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.9;
+    color: var(--text-dim);
+}
+.offer-num-badge { color: #f4c842; margin-right: 8px; }
+.offer-num-cost  { color: var(--text); font-weight: bold; }
+
+/* Case study */
+.offer-case-intro {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #666;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+}
+.offer-case-bullets { margin-bottom: 10px; }
+.offer-case-bullet {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.9;
+}
+.offer-case-hl { color: #55ff55; }
+
+.offer-expand-btn {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-bottom: 1px dashed #444;
+    padding-bottom: 2px;
+    margin-top: 2px;
+    transition: color 0.2s, border-color 0.2s;
+}
+.offer-expand-btn:hover { color: var(--text); border-bottom-color: var(--text); }
+
+.offer-expand-body {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+}
+.offer-expand-body.expanded {
+    max-height: 500px;
+    opacity: 1;
+    margin-top: 12px;
+}
+
+/* Audit table (case study documents) */
+.audit-table {
+    border-left: 2px solid #2a2a2a;
+    padding-left: 12px;
+}
+.audit-row {
+    display: flex;
+    gap: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.9;
+    color: var(--text-dim);
+}
+.audit-row-hd {
+    color: #444;
+    font-size: 10px;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #2a2a2a;
+    margin-bottom: 2px;
+    padding-bottom: 2px;
+}
+.audit-col-doc  { min-width: 130px; flex-shrink: 0; color: #999; }
+.audit-col-find { flex: 1; }
+
+/* Value table */
+.value-table  { margin: 6px 0; }
+.value-row {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 2;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.value-item  { color: var(--text-dim); }
+.value-total { color: #444; font-size: 11px; border-top: 1px solid #2a2a2a; }
+.value-yours { color: var(--text); }
+.value-doc   { flex: 1; }
+.value-price { min-width: 56px; text-align: right; }
+.value-strike { color: #444; text-decoration: line-through; }
+.value-green  { color: #55ff55; font-weight: bold; }
+
+/* Guarantee */
+.guarantee-block {
+    padding: 14px;
+    border: 1px dashed #2e2e2e;
+    background: rgba(85,255,85,0.025);
+    margin: 4px 0;
+}
+.guarantee-main {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: #55ff55;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+.guarantee-detail {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.8;
+}
+.guarantee-closer {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    margin-top: 8px;
+}
+
+/* Steps */
+.steps-list { margin: 6px 0; }
+.step-item {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 2.1;
+}
+.step-n { color: var(--text); font-weight: bold; margin-right: 4px; }
+
+/* Pricing */
+.pricing-lines { margin: 8px 0; }
+.pricing-line {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 2;
+}
+.pricing-featured { color: var(--text); }
+.price-cross  { text-decoration: line-through; color: #444; }
+.price-green  { color: #55ff55; font-weight: bold; font-size: 16px; }
+.price-note   { color: #666; font-size: 11px; }
+
+/* Scarcity */
+.scarcity-wrap { margin: 12px 0; }
+.scarcity-bar {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    color: #f4c842;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+}
+.scarcity-lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #666;
+}
+
+/* FAQ */
+.faq-list  { margin: 4px 0; }
+.faq-item  { margin-bottom: 4px; }
+.faq-q {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    cursor: pointer;
+    line-height: 2;
+    transition: color 0.2s;
+}
+.faq-q:hover { color: var(--text); }
+.faq-a {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.25s ease;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #666;
+    line-height: 1.7;
+    padding-left: 16px;
+    border-left: 1px solid #2a2a2a;
+    margin-left: 4px;
+}
+.faq-a.expanded {
+    max-height: 160px;
+    opacity: 1;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+/* CTAs */
+.offer-cta-wrap { padding-bottom: 30px; }
+.cta-pay {
+    display: block;
+    padding: 14px 20px;
+    background: #55ff55;
+    color: #0d0c0b;
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    margin: 16px 0 6px;
+    transition: background 0.2s;
+}
+.cta-pay:hover { background: #7dffaa; }
+.cta-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #444;
+    text-align: center;
+    margin-bottom: 14px;
+}
+.cta-dm {
+    display: block;
+    padding: 10px 20px;
+    border: 1px solid #333;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    text-align: center;
+    transition: border-color 0.2s, color 0.2s;
+    margin-bottom: 20px;
+}
+.cta-dm:hover { border-color: var(--text-dim); color: var(--text); }
+.offer-footer  { text-align: center; margin-top: 8px; }

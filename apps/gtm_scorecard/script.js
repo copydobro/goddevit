@@ -665,22 +665,194 @@ async function renderAnalyzing() {
     transition('RESULT');
 }
 
+// --- Dynamic Bridge Generator ---
+function getDynamicBridge(score, findings) {
+    const fails = findings.filter(f => f.status === 'fail');
+    const topFail = [...fails].sort((a, b) => b.max - a.max)[0];
+
+    const topLineMap = {
+        gif_demo:          'No demo video. Every visitor has to imagine your product working.',
+        problem_statement: 'No problem statement above the fold. Traffic lands and leaves in 8 seconds.',
+        value_prop:        "Your value prop isn't landing. Visitors can't tell who this is for.",
+        live_demo:         "No live demo link. \"I'd have to install it first\" — for every visitor.",
+        contributing:      'No contributing guide. First PRs and community signal left on the table.',
+        quick_start:       "No Quick Start. Devs close tabs when they can't run something in 3 minutes.",
+        screenshots:       "No screenshots. Readers can't see your product without installing it.",
+        social_proof:      'No social proof. Cold visitors have no reason to trust this is real.',
+        badges:            "No status badges. First-timers can't tell if this project is alive.",
+        changelog:         'No changelog. Returning users have no reason to come back.',
+        code_blocks:       'No code examples. Devs copy-paste before they read.'
+    };
+
+    const topLine = topFail ? (topLineMap[topFail.id] || '') : '';
+
+    let bridge;
+    if (score < 15) {
+        bridge = `Your README isn't converting.\nYour distribution pipeline has the same problem — at every layer.`;
+    } else if (score < 30) {
+        bridge = `Your README has ${fails.length} fixable gaps.\nYour distribution pipeline has more — and they compound.`;
+    } else if (score < 45) {
+        bridge = `Your README is almost there. But README is one layer.\nThe full pipeline goes deeper: channels, positioning, onboarding, post-launch.`;
+    } else {
+        bridge = `Your README is solid.\nWhich means the bottleneck is elsewhere in your pipeline.`;
+    }
+
+    return { topLine, bridge };
+}
+
+// --- Build offer HTML ---
+function buildOfferHTML(topLine, bridge) {
+    const spotsTotal     = typeof FOUNDING_SPOTS_TOTAL     !== 'undefined' ? FOUNDING_SPOTS_TOTAL     : 3;
+    const spotsRemaining = typeof FOUNDING_SPOTS_REMAINING !== 'undefined' ? FOUNDING_SPOTS_REMAINING : 2;
+    const spotsFilled    = spotsTotal - spotsRemaining;
+    const barFilled      = Math.round((spotsFilled / spotsTotal) * 10);
+    const barEmpty       = 10 - barFilled;
+    const payUrl         = typeof PAYMENT_URL    !== 'undefined' ? PAYMENT_URL    : '#';
+    const threadsUrl     = typeof THREADS_DM_URL !== 'undefined' ? THREADS_DM_URL : '#';
+
+    const faqItems = [
+        { q: 'I only have 43 stars. Is that enough traction?',
+          a: 'Yes. FnKey had 43 stars. What matters is signal, not scale: stars, active users, or at least one serious launch attempt. If people have chosen your product over doing nothing — that\'s enough.' },
+        { q: 'How is this different from generic GTM advice?',
+          a: 'Every finding is specific to your product and backed by a cited source. Not "you should try HN" — but "Show HN for your category: median 289 stars in 7 days (ArXiv n=138). Here\'s the exact title, post time, and first 4 hours protocol."' },
+        { q: 'Do I need calls or meetings?',
+          a: 'No. Everything is async. The brief is 6 questions, 10 minutes. After that — only Notion. You read at your own pace, act in your own time.' },
+        { q: "What if I don't get at least 5 gaps?",
+          a: "Full refund. No conditions, no friction. We've never had to issue one — FnKey had 13 gaps — but the guarantee is unconditional." },
+        { q: 'What if the 7-day deadline is missed?',
+          a: '$70 off automatically for each day over. Built into our process. You don\'t need to chase us.' },
+        { q: 'What if I already know my main gap?',
+          a: "Good — that confirms demand exists. The audit finds the gaps you don't know about yet. FnKey's founder knew about the README. He didn't know about 12 others, including Show HN — which alone was worth 20 months of organic growth." }
+    ];
+
+    const faqHTML = faqItems.map((f, i) => `
+        <div class="faq-item">
+            <div class="faq-q" data-faq="${i}">[ &#9658; ${f.q} ]</div>
+            <div class="faq-a" id="faq-a-${i}">${f.a}</div>
+        </div>`).join('');
+
+    return `
+<div class="offer-section">
+    <div class="offer-divider">──────────────────────────────────────────────────</div>
+    ${topLine ? `<div class="offer-topline">${topLine}</div>` : ''}
+    <div class="offer-bridge">${bridge.replace(/\n/g, '<br>')}</div>
+    <div class="offer-subline">The GTM Audit finds it. In 7 days. Seven documents. Every layer mapped.</div>
+</div>
+
+<div class="offer-section">
+    <div class="offer-divider">── The problem (in exact numbers) ──────────────</div>
+    <div class="offer-numbers">
+        <div class="offer-number-row"><span class="offer-num-badge">[!]</span> Every week Show HN is unposted <span class="offer-num-cost">= 289 stars that will never come</span></div>
+        <div class="offer-number-row"><span class="offer-num-badge">[!]</span> Every month without problem statement <span class="offer-num-cost">= 56 stars lost in conversion</span></div>
+        <div class="offer-number-row"><span class="offer-num-badge">[!]</span> Every launch without owned channel <span class="offer-num-cost">= 25x cold start penalty</span></div>
+    </div>
+    <div class="offer-source">Source: ArXiv n=138 &middot; TOAST UI analytics &middot; Dub.co vs Rolyai</div>
+</div>
+
+<div class="offer-section">
+    <div class="offer-divider">── Case study ──────────────────────────────────</div>
+    <div class="offer-case-intro">FnKey &middot; macOS voice-to-text &middot; 43 stars &middot; $0 ads</div>
+    <div class="offer-case-bullets">
+        <div class="offer-case-bullet">&rarr; Value prop that would 5x conversion was buried in a dev.to post. Not in README or PH listing.</div>
+        <div class="offer-case-bullet">&rarr; 107 PH upvotes from a one-time network. Every next launch is a cold start.</div>
+        <div class="offer-case-bullet">&rarr; Show HN never posted. 289 stars/week &mdash; 20 months of organic growth &mdash; sitting idle.</div>
+        <div class="offer-case-bullet offer-case-hl">&rarr; 13 gaps found. Top 3 take under 3 hours to fix.</div>
+    </div>
+    <div class="offer-expand-btn" id="case-toggle">[ &#9658; SEE ALL 7 DOCUMENTS ]</div>
+    <div class="offer-expand-body" id="case-body">
+        <div class="audit-table">
+            <div class="audit-row audit-row-hd"><span class="audit-col-doc">DOCUMENT</span><span class="audit-col-find">KEY FINDING</span></div>
+            <div class="audit-row"><span class="audit-col-doc">ICP Analysis</span><span class="audit-col-find">"The bottleneck is our keyboard" &mdash; verbatim from 10+ sources</span></div>
+            <div class="audit-row"><span class="audit-col-doc">Positioning</span><span class="audit-col-find">Product is excellent. Packaging loses people before they see it.</span></div>
+            <div class="audit-row"><span class="audit-col-doc">Packaging Audit</span><span class="audit-col-find">GitHub Traction Score: 44/100. README explains WHAT and HOW, not WHY.</span></div>
+            <div class="audit-row"><span class="audit-col-doc">Launch Audit</span><span class="audit-col-find">PH Readiness: 56/100. 107 upvotes from one-time borrowed channel.</span></div>
+            <div class="audit-row"><span class="audit-col-doc">Cost of Inaction</span><span class="audit-col-find">20 months of organic growth lost per week while Show HN is unposted.</span></div>
+            <div class="audit-row"><span class="audit-col-doc">Traction Gap Map</span><span class="audit-col-find">13 gaps ranked by impact. Guarantee met with 2.6x margin.</span></div>
+            <div class="audit-row"><span class="audit-col-doc">30-Day Protocol</span><span class="audit-col-find">Conservative forecast: +530 stars in 30 days. Current pace: +14.</span></div>
+        </div>
+    </div>
+</div>
+
+<div class="offer-section">
+    <div class="offer-divider">── What you get ────────────────────────────────</div>
+    <div class="value-table">
+        <div class="value-row value-item"><span class="value-doc">ICP Analysis</span><span class="value-price">$800</span></div>
+        <div class="value-row value-item"><span class="value-doc">Positioning Analysis</span><span class="value-price">$1,200</span></div>
+        <div class="value-row value-item"><span class="value-doc">Packaging Audit</span><span class="value-price">$600</span></div>
+        <div class="value-row value-item"><span class="value-doc">Launch Audit</span><span class="value-price">$700</span></div>
+        <div class="value-row value-item"><span class="value-doc">Cost of Inaction Matrix</span><span class="value-price">$500</span></div>
+        <div class="value-row value-item"><span class="value-doc">Traction Gap Map</span><span class="value-price">$1,500</span></div>
+        <div class="value-row value-item"><span class="value-doc">30-Day Distribution Protocol</span><span class="value-price">$800</span></div>
+        <div class="value-row value-total"><span class="value-doc">TOTAL VALUE</span><span class="value-price value-strike">$6,100</span></div>
+        <div class="value-row value-yours"><span class="value-doc">YOUR INVESTMENT</span><span class="value-price value-green">$500</span></div>
+    </div>
+    <div class="offer-source" style="margin-top:6px;">All 7 documents delivered into your Notion workspace. Yours to keep.</div>
+</div>
+
+<div class="offer-section">
+    <div class="offer-divider">── The 5-Gap Guarantee ──────────────────────────</div>
+    <div class="guarantee-block">
+        <div class="guarantee-main">[ GUARANTEE ] 5 specific gaps &mdash; or $500 refunded in full.</div>
+        <div class="guarantee-detail">Every finding: cited benchmark &middot; specific fix &middot; effort estimate.</div>
+        <div class="guarantee-detail">7-day delivery. Miss by a day? $70 off. Automatically.</div>
+        <div class="guarantee-closer">You literally cannot lose.</div>
+    </div>
+</div>
+
+<div class="offer-section">
+    <div class="offer-divider">── How it works ────────────────────────────────</div>
+    <div class="steps-list">
+        <div class="step-item"><span class="step-n">STEP 1</span> &rarr; Pay &rarr; 10-min async brief (6 questions about your product and channels)</div>
+        <div class="step-item"><span class="step-n">STEP 2</span> &rarr; We build &rarr; 7 days. Each document references the previous.</div>
+        <div class="step-item"><span class="step-n">STEP 3</span> &rarr; Delivered &rarr; Documents appear in your Notion workspace one by one.</div>
+    </div>
+    <div class="offer-source" style="margin-top:8px;">No calls. No meetings. Async = respect for your time.</div>
+</div>
+
+<div class="offer-section">
+    <div class="offer-divider">── Start your audit ────────────────────────────</div>
+    <div class="pricing-lines">
+        <div class="pricing-line">Market rate: <span class="price-cross">$1,500</span></div>
+        <div class="pricing-line pricing-featured">Founding rate: <span class="price-green">$500</span> <span class="price-note">&mdash; first ${spotsTotal} audits only, while we build case studies</span></div>
+    </div>
+    <div class="scarcity-wrap">
+        <div class="scarcity-bar">${'\u2588'.repeat(barFilled * 2)}${'\u2591'.repeat(barEmpty * 2)}</div>
+        <div class="scarcity-lbl">${spotsRemaining} of ${spotsTotal} founding spots remaining</div>
+    </div>
+</div>
+
+<div class="offer-section">
+    <div class="offer-divider">── FAQ ──────────────────────────────────────────</div>
+    <div class="faq-list">${faqHTML}</div>
+</div>
+
+<div class="offer-section offer-cta-wrap">
+    <div class="offer-divider">──────────────────────────────────────────────────</div>
+    <a href="${payUrl}" target="_blank" class="cta-pay" id="cta-pay">[ GET THE FULL AUDIT &mdash; $500 &rarr; ]</a>
+    <div class="cta-meta">BTC &middot; ETH &middot; USDT &middot; USDC &middot; SOL &middot; 100+ currencies via NOWPayments</div>
+    <a href="${threadsUrl}" target="_blank" class="cta-dm">[ ASK A QUESTION ON THREADS &rarr; ]</a>
+    <div class="offer-footer">
+        <a href="#" onclick="location.reload()" style="color:var(--text-dim);text-decoration:none;font-size:12px;border-bottom:1px dotted var(--text-dim);">[ ANALYZE ANOTHER README ]</a>
+    </div>
+</div>`;
+}
+
 // --- Render: RESULT ---
 function renderResult() {
     dom.screen.innerHTML = '';
 
     const verdict = getVerdict(state.totalScore);
+    const { topLine, bridge } = getDynamicBridge(state.totalScore, state.findings);
 
     // Score header
     const headerEl = document.createElement('div');
     headerEl.style.marginBottom = '20px';
-    headerEl.innerHTML = `<div class="result-status ${verdict.cssClass}">README TRACTION SCORE: ${state.totalScore}/54 — ${verdict.text}</div>`;
+    headerEl.innerHTML = `<div class="result-status ${verdict.cssClass}">README TRACTION SCORE: ${state.totalScore}/54 &mdash; ${verdict.text}</div>`;
     dom.screen.appendChild(headerEl);
 
     // Findings list
     const findingsEl = document.createElement('div');
     findingsEl.className = 'findings-list';
-
     state.findings.forEach(finding => {
         const badgeMap = {
             ok:   { badge: '[ OK  ]', cssClass: 'ok' },
@@ -688,8 +860,6 @@ function renderResult() {
             fail: { badge: '[ FAIL ]', cssClass: 'fail' }
         };
         const b = badgeMap[finding.status];
-        const showTip = finding.status !== 'ok';
-
         const item = document.createElement('div');
         item.className = 'finding-item';
         item.innerHTML = `
@@ -697,122 +867,44 @@ function renderResult() {
                 <span class="finding-badge ${b.cssClass}">${b.badge}</span>
                 <span class="finding-label">${finding.label} (${finding.score}/${finding.max})</span>
             </div>
-            ${showTip ? `<div class="finding-tip">→ ${finding.tip}</div>` : ''}
+            ${finding.status !== 'ok' ? `<div class="finding-tip">&rarr; ${finding.tip}</div>` : ''}
         `;
         findingsEl.appendChild(item);
     });
-
     dom.screen.appendChild(findingsEl);
-    dom.screen.scrollTop = dom.screen.scrollHeight;
 
-    // CTA block
-    const cta = document.createElement('div');
-    cta.className = 'cta-group';
+    // Offer sections
+    const offerEl = document.createElement('div');
+    offerEl.className = 'offer-wrapper';
+    offerEl.innerHTML = buildOfferHTML(topLine, bridge);
+    dom.screen.appendChild(offerEl);
 
-    // Bridge block — set via textContent to preserve newlines with white-space: pre-wrap
-    const bridgeEl = document.createElement('div');
-    bridgeEl.className = 'bridge-block';
-    bridgeEl.style.whiteSpace = 'pre-wrap';
-    bridgeEl.textContent =
-`Your README has gaps.
-Your distribution pipeline has more.
+    // Wire interactions
+    const caseToggle = offerEl.querySelector('#case-toggle');
+    const caseBody   = offerEl.querySelector('#case-body');
+    if (caseToggle && caseBody) {
+        caseToggle.addEventListener('click', () => {
+            const open = caseBody.classList.toggle('expanded');
+            caseToggle.innerHTML = open
+                ? '[ &#9660; HIDE DOCUMENTS ]'
+                : '[ &#9658; SEE ALL 7 DOCUMENTS ]';
+        });
+    }
 
-──────────────────────────────────────
-
-The scanner reads one layer.
-The full audit maps every bottleneck:
-channels, positioning, onboarding, post-launch.
-
-Real example — FnKey, Rust macOS tool, 43 stars:
-
-  → 13 gaps found across the full pipeline
-  → Show HN never posted: 289 stars/week lost
-  → That one gap = 20 months of organic growth sitting idle
-
-These gaps don't show up in a README scan.
-
-──────────────────────────────────────
-
-Leave your email.
-We'll send you the full FnKey audit.
-See exactly what your audit would look like — before paying anything.`;
-    cta.appendChild(bridgeEl);
-
-    // Rest of CTA
-    const ctaRest = document.createElement('div');
-    ctaRest.innerHTML = `
-        <div class="email-capture">
-            <input
-                type="email"
-                id="lead-email"
-                class="email-input"
-                placeholder="your@email.com"
-                spellcheck="false"
-                autocomplete="email"
-            />
-            <div id="email-error" class="input-error" style="display:none">
-                ERROR: Valid email required.
-            </div>
-        </div>
-
-        <button class="cta-button" id="cta-btn">SEND ME THE CASE STUDY &rarr;</button>
-
-        <div style="margin-top: 25px;">
-            <a href="#" onclick="location.reload()" style="color: var(--text-dim); text-decoration: none; font-size: 13px; border-bottom: 1px dotted var(--text-dim);">[ ANALYZE ANOTHER README ]</a>
-        </div>
-    `;
-    cta.appendChild(ctaRest);
-    dom.screen.appendChild(cta);
-
-    // --- Email CTA ---
-    const ctaBtn = ctaRest.querySelector('#cta-btn');
-    const emailInput = ctaRest.querySelector('#lead-email');
-    const emailError = ctaRest.querySelector('#email-error');
-
-    ctaBtn.addEventListener('click', async () => {
-        const email = emailInput.value.trim();
-        const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-        if (!valid) {
-            emailError.style.display = 'block';
-            emailInput.focus();
-            flash();
-            return;
-        }
-        emailError.style.display = 'none';
-        ctaBtn.textContent = 'SENDING...';
-        ctaBtn.disabled = true;
-
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/gtm/capture-lead`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email,
-                    score: state.totalScore || 0,
-                    findings: state.findings || {},
-                }),
-            });
-            if (!res.ok) throw new Error(`Server error: ${res.status}`);
-            if (typeof posthog !== 'undefined') {
-                posthog.identify(email, { email: email, last_score: state.totalScore });
-                posthog.capture('lead_captured', { score: state.totalScore });
-            }
-            ctaBtn.textContent = '[ OK ] CHECK YOUR INBOX';
-            ctaBtn.style.background = '#55ff55';
-            ctaBtn.style.color = '#0d0c0b';
-        } catch (err) {
-            console.error('capture-lead error:', err);
-            // Fallback: still show success UX so user isn't stuck
-            ctaBtn.textContent = '[ OK ] CHECK YOUR INBOX';
-            ctaBtn.style.background = '#55ff55';
-            ctaBtn.style.color = '#0d0c0b';
-        }
+    offerEl.querySelectorAll('.faq-q').forEach(q => {
+        q.addEventListener('click', () => {
+            const a = offerEl.querySelector(`#faq-a-${q.dataset.faq}`);
+            const open = a.classList.toggle('expanded');
+            q.innerHTML = q.innerHTML.replace(open ? '&#9658;' : '&#9660;', open ? '&#9660;' : '&#9658;');
+        });
     });
 
-    // Allow Enter key in email field
-    emailInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') ctaBtn.click();
-    });
+    const ctaPay = offerEl.querySelector('#cta-pay');
+    if (ctaPay && typeof posthog !== 'undefined') {
+        ctaPay.addEventListener('click', () => {
+            posthog.capture('payment_clicked', { score: state.totalScore });
+        });
+    }
 
     dom.screen.scrollTop = dom.screen.scrollHeight;
 }
