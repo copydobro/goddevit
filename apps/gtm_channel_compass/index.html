@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTM Channel Compass — Найди свой канал дистрибуции за 8 вопросов</title>
+    <meta name="description" content="Перестань гадать с каналом. 8-вопросная диагностика маппит продукт, стадию и тип фаундера на самый высокорычажный ход. Бесплатно. Без воды.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://goddevit.tech">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://goddevit.tech/">
+    <meta property="og:title" content="GTM Channel Compass — Найди свой канал дистрибуции за 8 вопросов">
+    <meta property="og:description" content="Перестань гадать с каналом. 8-вопросная диагностика маппит продукт, стадию и тип фаундера на самый высокорычажный ход. Бесплатно. Без воды.">
+    <meta property="og:image" content="https://goddevit.tech/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://goddevit.tech/">
+    <meta property="twitter:title" content="GTM Channel Compass — Найди свой канал дистрибуции за 8 вопросов">
+    <meta property="twitter:description" content="Перестань гадать с каналом. 8-вопросная диагностика маппит продукт, стадию и тип фаундера на самый высокорычажный ход. Бесплатно. Без воды.">
+    <meta property="twitter:image" content="https://goddevit.tech/og-image.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        !function(t,e){var o,n,p,r;e.__SV||(window.posthog && window.posthog.__loaded)||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="Ii init Di qi Sr Bi Zi Pi capture calculateEventProperties Yi register register_once register_for_session unregister unregister_for_session Xi getFeatureFlag getFeatureFlagPayload getFeatureFlagResult isFeatureEnabled reloadFeatureFlags updateFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey displaySurvey cancelPendingSurvey canRenderSurvey canRenderSurveyAsync Ji identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset setIdentity clearIdentity get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException startExceptionAutocapture stopExceptionAutocapture loadToolbar get_property getSessionProperty Wi Vi createPersonProfile setInternalOrTestUser Gi Fi tn opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing get_explicit_consent_status is_capturing clear_opt_in_out_capturing $i debug Tr Ui getPageViewId captureTraceFeedback captureTraceMetric Ri".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+        posthog.init('phc_sY5NxwxlXFjBXZ00zaxYM5U9KjrYuQInQ91wIgHTPnm', {
+            api_host: 'https://us.i.posthog.com',
+            defaults: '2026-01-30',
+            person_profiles: 'identified_only',
+            capture_pageview: true,
+            capture_pageleave: true,
+            autocapture: false,
+            persistence: 'localStorage+cookie',
+            loaded: function(ph) {
+                var p = new URLSearchParams(window.location.search);
+                var utmSource = p.get('utm_source');
+                if (utmSource) {
+                    ph.register({
+                        utm_source:   utmSource,
+                        utm_medium:   p.get('utm_medium')   || null,
+                        utm_campaign: p.get('utm_campaign') || null,
+                        utm_content:  p.get('utm_content')  || null,
+                    });
+                    ph.capture('traffic_source_identified', {
+                        utm_source:   utmSource,
+                        utm_medium:   p.get('utm_medium'),
+                        utm_campaign: p.get('utm_campaign'),
+                        utm_content:  p.get('utm_content'),
+                        referrer:     document.referrer || 'direct',
+                        landing_url:  window.location.href,
+                    });
+                }
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="crt-overlay"></div>
+    <div class="scanlines"></div>
+
+    <!-- Boot Sequence -->
+    <div class="boot-sequence" id="boot-screen">
+        <div id="boot-logs"></div>
+    </div>
+
+    <div class="terminal-container" id="terminal">
+        <div class="terminal-header">
+            <div class="dots"><span></span><span></span><span></span></div>
+            <div class="title">gtm-channel-compass --version 1.0.0</div>
+        </div>
+        <div class="terminal-progress" id="progress-bar" style="display:none">
+            <span id="progress-text"></span>
+        </div>
+        <div class="terminal-body" id="screen">
+            <!-- Content injected by script.js -->
+        </div>
+    </div>
+
+    <div class="screen-flash" id="flash"></div>
+
+    <script src="config.js"></script>
+    <script src="i18n.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

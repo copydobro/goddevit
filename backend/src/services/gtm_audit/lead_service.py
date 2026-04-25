@@ -1,11 +1,11 @@
-"""GTM Audit — lead capture service.
+"""GTM Channel Compass — lead capture service.
 
 Flow:
-  1. Scorecard submits email + score + findings
+  1. Channel Compass submits email + archetype + answers
   2. Upsert GtmLead record
-  3. Send email with personalised payment link + case study via Resend
+  3. Send archetype result email via Resend
 """
-import urllib.parse
+import hmac, hashlib, base64
 from sqlalchemy.orm import Session
 from src.config import settings
 from src.integrations.resend import ResendClient
@@ -13,82 +13,231 @@ from src.repositories.gtm_lead_repository import GtmLeadRepository
 from src.utils.logger import logger
 
 
+def _make_unsubscribe_token(email: str) -> str:
+    secret = (settings.nowpayments_ipn_secret_key or "goddevit-unsub-secret").encode()
+    sig = hmac.new(secret, email.lower().encode(), hashlib.sha256).digest()
+    return base64.urlsafe_b64encode(sig).decode().rstrip("=")
+
+
+def _unsubscribe_url(email: str) -> str:
+    token = _make_unsubscribe_token(email)
+    encoded = base64.urlsafe_b64encode(email.lower().encode()).decode().rstrip("=")
+    return f"{settings.api_base_url}/api/gtm/unsubscribe?e={encoded}&t={token}"
+
+
 # ---------------------------------------------------------------------------
 # Email template
 # ---------------------------------------------------------------------------
 
-def _build_case_study_email(payment_url: str) -> str:
-    """HTML email sent after email capture in the scorecard."""
-    return f"""
-<!DOCTYPE html>
-<html lang="en">
+COMPASS_ARCHETYPES = {
+    "focused_builder": {
+        "name": "Сфокусированный билдер", "icon": "[FB]",
+        "tagline": "Dev-утилита · Self-serve · Технический покупатель",
+        "primaryChannel": "Reddit-сообщества + Hacker News",
+        "primaryReason": "Технические покупатели находят инструменты через экспертные сообщества, а не через поиск или рекламу. Стек вовлечения: (1) r/SaaS (410K участников, еженедельные треды фидбека) (2) r/SideProject (500K, разрешён шеринг проектов, самый быстрый рост) (3) Indie Hackers (самая высокая конверсия на пост) (4) Hacker News Show HN (высокий статус). Стратегия: валидация боли → совет → мягкое упоминание. Этот подход 4:1 обходит фильтры сообществ.",
+        "tabooChannel": "SEO",
+        "tabooReason": "Нулевой авторитет домена означает 6–18 месяцев ожидания трафика. Пока вы ждёте SEO, вы не знаете, нужен ли продукт кому-то. Reddit r/SaaS даст 10 реальных реакций разработчиков к четвергу бесплатно. Сигнал на этой неделе или трафик через 18 месяцев — выбор очевиден.",
+        "bias": "Разрыв активности и целей",
+        "biasDetail": "Ваш мозг заменяет сложную задачу (общение с юзерами, риск отказа) знакомым дофаминовым циклом написания кода. Канемановское замещение Системы 1 — «Как мне найти юзеров?» незаметно превращается в «Как мне отрефакторить эту функцию?». Миндалевидное тело видит в аутриче социальную угрозу и возвращает вас к терминалу.",
+        "buyerMode": "Оценка дорогого сигнала",
+        "buyerDetail": "Технические покупатели применяют теорию «дорогого сигнала». Качество вашего GitHub, аргументация в тредах и глубина документации — это прокси компетентности продукта. Они оценивают не фичи, а «свой ли вы». Пост, написанный как маркетолог, вызывает мгновенное отторжение.",
+        "redDoorTactics": "Напишите скрипт, решающий реальную боль (даже без вашего SaaS), и поделитесь им бесплатно в самом специфичном сабреддите. Метрика: вовлечение в комментариях и ЛС, а не апвоуты.",
+        "week4metric": "5+ качественных сессий фидбека или GitHub issues от реальных разработчиков",
+        "warningSignal": "Ноль комментариев или только реакции типа 'cool project' после 10+ постов",
+    },
+    "vertical_hunter": {
+        "name": "Вертикальный охотник", "icon": "[VH]",
+        "tagline": "Vertical SaaS · Чёткий ICP · Нетехнический покупатель",
+        "primaryChannel": "Cold Email + Отраслевые рассылки",
+        "primaryReason": "У вас есть точный список — это меняет всё. Холодный email — единственный канал, где вы можете достать 100 конкретных ЛПР на этой неделе. Стек: (1) Список: Apollo или LinkedIn Sales Nav для поиска конкретных ролей (2) Сигнал персонализации: один конкретный инсайт об их процессе, а не шаблонное вступление (3) Бенчмарк: 5–10% ответов на персонализированные письма. Дополнительно: отраслевые рассылки (логистика, стоматология, стройка) обычно имеют 10–50K сабов с почти нулевой конкуренцией рекламодателей.",
+        "tabooChannel": "Product Hunt",
+        "tabooReason": "Данные подтверждают: запуск на PH приносит строителей и ранних последователей, а не менеджеров по логистике или владельцев клиник. Ваш покупатель сидит в отраслевой рассылке или LinkedIn-группе, а не листает Product Hunt. Топ-10 запуск на PH стоит 3 недели работы и приносит ноль квалифицированных вертикальных лидов.",
+        "bias": "Эффект присоединения к большинству",
+        "biasDetail": "Стадное поведение, подпитываемое окситоцином — запуск на PH или пост в r/SaaS снижает уровень кортизола через чувство безопасности в толпе, независимо от того, подходит ли канал вашему ICP. Вы оптимизируете социальное одобрение от других фаундеров, а не продажи.",
+        "buyerMode": "Избегание потерь + Сигнал авторитета",
+        "buyerDetail": "Нетехнические покупатели в вертикалях испытывают в 2 раза больше боли от плохой покупки, чем удовольствия от хорошей. Холодное письмо с конкретным инсайтом об их процессе обезоруживает защитную реакцию. Первый вопрос покупателя: не «что это делает?», а «можно ли доверять этому человеку?»",
+        "redDoorTactics": "Составьте список из 50 контактов в вашей вертикали и отправьте письмо из 3 строк с одним инсайтом о процессе — без предложения демо. Метрика: reply rate, а не open rate.",
+        "week4metric": "5–10% reply rate на персонализированные холодные письма по списку 50+ контактов",
+        "warningSignal": "Bounce rate >10% или ноль содержательных ответов после 20+ персонализированных писем",
+    },
+    "content_authority": {
+        "name": "Контент-авторитет", "icon": "[CA]",
+        "tagline": "Horizontal SaaS · Фаундер-писатель · Покупатель знает проблему",
+        "primaryChannel": "Long-tail SEO + Substack",
+        "primaryReason": "Ваш ICP находится в Системе 2 Канемана — активно исследует боль, а не решение. Они вбивают симптомы в Google: «как снизить накладные расходы», «автоматизация сверки инвойсов». Стек: (1) Long-tail SEO по симптомам — посты на 2000+ слов (2) Substack как собственная дистрибуция — стройте аудиторию вокруг проблемы, а не имени продукта (3) Посевы в сообществах: кейсы на r/SaaS приносят огромный охват. Модели для подражания: Arvid Kahl и Harry Dry.",
+        "tabooChannel": "Платная реклама",
+        "tabooReason": "Покупатели, осознающие проблему, находятся в режиме исследования — они не готовы покупать. Реклама прерывает их процесс, а не конвертирует. Разработчики сразу считывают коммерческий интерес и уходят. Каждый доллар на рекламу сейчас покупает дорогое обучение, которое контент доставил бы бесплатно и с большим доверием.",
+        "bias": "Предвзятость подтверждения (Ловушка горизонтали)",
+        "biasDetail": "Эвристика доступности заставляет думать, что «писать для всех» рационально — рынок кажется огромным. Но успех горизонтальных SaaS на бутстрапе без $1M инвестиций — ниже 5%. Нишевание кажется риском. Но отсутствие ниши И ЕСТЬ риск.",
+        "buyerMode": "Режим осознанного исследования (Система 2)",
+        "buyerDetail": "Такие покупатели находятся в Системе 2 — медленной, обдуманной. Образовательный контент идеально совпадает с их когническим режимом. Реклама — это прерывание Системы 1, вызывающее психологическое сопротивление: «Почему вы мне это продаёте?». Вы выигрываете, становясь гидом, который объясняет карту.",
+        "redDoorTactics": "Опубликуйте один «Конфликтный пост» — бросьте вызов общепринятому убеждению в индустрии с данными и контр-тезисом. Сначала в Substack, затем посев в сообществах.",
+        "week4metric": "100+ качественных прочтений одной статьи (сессия >3 мин, bounce rate <80%)",
+        "warningSignal": "Bounce rate >80% или средняя сессия меньше 90 секунд",
+    },
+    "networker": {
+        "name": "Сетевик", "icon": "[NW]",
+        "tagline": "Horizontal-продукт · ICP не определён · Отношения прежде всего",
+        "primaryChannel": "LinkedIn CustDev звонки",
+        "primaryReason": "Ваш ICP недостаточно точен для холодного email или рекламы — в этом и проблема. Звонки в LinkedIn — механизм, который это чинит. Процесс: (1) Найдите 3–5 профилей ICP (2) Свяжитесь с 20–30 каждым в LinkedIn: «Я строю X, чтобы решить Y — хочу понять, есть ли у вас эта проблема» (3) Каждый звонок даёт точные фразы, которые станут вашим копирайтом и позиционированием. Звонок И ЕСТЬ исследование рынка. Исследование рынка И ЕСТЬ канал.",
+        "tabooChannel": "Платная реклама",
+        "tabooReason": "Реклама усиливает работающее сообщение. У вас его ещё нет. Каждый доллар в платный трафик сейчас просто подтверждает, что сообщение не работает. Хуже того: решение запустить рекламу даёт дофаминовый сигнал действия («мы что-то делаем»), пока реальная проблема — «мы не знаем кому продаём» — не решается.",
+        "bias": "Предвзятость отбора",
+        "biasDetail": "Избегание социальной угрозы — мозг защищает эго, ограничивая охват знакомыми территориями. Холодные разговоры с ЛПР активируют те же нейронные цепи угрозы, что и публичное отвержение. В итоге вы масштабируете комфортные низкосигнальные действия вместо высокосигнальных разговоров.",
+        "buyerMode": "Социальное доказательство + Статусный сигнал",
+        "buyerDetail": "Покупатели горизонтальных решений с неопределённой болью спрашивают: «Кто ещё этим пользуется?». Социальное доказательство здесь — не тактика конверсии, а обязательное условие. Дискавери-звонки — это не продажи. Это способ выучить язык вашего ICP.",
+        "redDoorTactics": "Забронируйте 5 дискавери-звонков в LinkedIn на этой неделе — без питча и демо. Только один вопрос: «Что самое сложное в [проблеме, которую вы решаете]?» Записывайте фразы.",
+        "week4metric": "20% конверсия из охвата LinkedIn в 30-минутные звонки; найдены 3+ повторяющиеся фразы о боли",
+        "warningSignal": "Собеседники не говорят о срочности, бюджете или текущих костылях — боль недостаточно острая",
+    },
+    "consumer_catalyst": {
+        "name": "Потребительский катализатор", "icon": "[CC]",
+        "tagline": "Consumer app · Виральная петля · Индивидуальный покупатель",
+        "primaryChannel": "Виральная инженерия + Короткие видео",
+        "primaryReason": "Потребительские продукты живут или умирают за счёт встроенной виральности. Стек: (1) K-factor аудит: если он ниже 0.1, никакой канал не спасёт (2) Короткие видео (TikTok, Reels, Shorts): вовлечение в 10 раз выше текста — показывайте продукт в реальных ситуациях (3) Twitter Build-in-public: фото-AI levelsio дошёл до $10K MRR за 3 недели через публичную документацию метрик.",
+        "tabooChannel": "Поисковая реклама",
+        "tabooReason": "Потребительские приложения не конвертируются через поисковый интерес — они распространяются через миметическое желание. Экономика платного поиска никогда не сойдётся при потребительском LTV: если подписка стоит $10, а клик $5–20, вам нужна почти 100% конверсия. Этого не будет. Чините виральную петлю.",
+        "bias": "BIRGing (Греться в лучах чужой славы)",
+        "biasDetail": "Социальное зеркалирование — мозг имитирует стратегии Notion или Slack, чтобы снизить тревогу. Это социальное доказательство Чалдини наоборот: вместо создания доказательств для других, вы ищете валидацию, подражая гигантам. Итог — стратегия B2B дистрибуции для продукта, который растёт только через виральность.",
+        "buyerMode": "Миметическое желание + FOMO-каскад",
+        "buyerDetail": "Потребительское принятие идет через миметическое желание Жирара — пользователи хотят то, что хотят другие. Каждый органический шер — это триггер. K-factor ниже 1.0 означает, что каскад провалился. Инженерия момента шеринга — это не хак, а единственный рабочий механизм.",
+        "redDoorTactics": "Добавьте один момент вынужденного шеринга в основной флоу (шер для разблокировки, инвайт для результата). Метрика: количество шеров на активного юзера.",
+        "week4metric": "K-factor > 0.1 и рост DAU ≥ 15% неделя к неделе",
+        "warningSignal": "K-factor < 0.1 при здоровом инбаунде — сломана петля продукта, а не канал",
+    },
+    "enterprise_sniper": {
+        "name": "Энтерпрайз-снайпер", "icon": "[ES]",
+        "tagline": "Dev-утилита · Высокий ACV · Enterprise-покупатель",
+        "primaryChannel": "Founder-led Outbound + Технический авторитет",
+        "primaryReason": "Энтерпрайз-покупатели не сидят в сообществах — они оценивают вендоров через референсы и прямые технические диалоги. Стек для ACV $10K+: (1) Прямой аудит фаундером: найдите проблему в публичном стеке цели (GitHub, блог) и напишите письмо без коммерческого интереса (2) Технический контент в LinkedIn: пишите глубокий анализ. Когда вас увидят как равного, пойдёт инбаунд.",
+        "tabooChannel": "Посты в сообществах",
+        "tabooReason": "100 апвоутов на HN дают дофаминовый сигнал тяги, но это не так. Закупочные комитеты не читают r/SaaS. Видимость в сообществе и контракты на $10K+ не связаны причинно-следственной связью. Вы тратите время на других фаундеров (которые не купят) вместо техлидов и CTO.",
+        "bias": "Пренебрежение базовым уровнем",
+        "biasDetail": "Мозг использует эвристику доступности, считая лайки и комменты пайплайном. Это не так. В энтерпрайзе вовлеченность в сообществе и выручка разделены пропастью. Вы гонитесь за цифрами, которые не ведут к деньгам.",
+        "buyerMode": "Когнитивный авторитет + Взаимность коллег",
+        "buyerDetail": "Старшие инженеры и CTO находятся в режиме постоянной «защиты от продаж». Технический диалог «фаундер-фаундеру» обходит это, триггеря взаимность вместо защиты. Цель первого контакта — ноль коммерции. Только тогда начинается реальная оценка.",
+        "redDoorTactics": "Найдите одну техническую проблему в стеке целевой компании (GitHub issues, вакансии). Отправьте письмо из 4 строк — без упоминания продукта.",
+        "week4metric": "3–5 квалифицированных звонков в неделю из аутрича; минимум 1 переходит в фоллоу-ап",
+        "warningSignal": "Разговоры прыгают к безопасности или закупкам до того, как вы установили ценность продукта",
+    },
+    "conversion_architect": {
+        "name": "Архитектор конверсии", "icon": "[CV]",
+        "tagline": "Любой продукт · Покупатель знает продукт · 100+ юзеров",
+        "primaryChannel": "BOFU SEO + Ретаргетинг + Сайты отзывов",
+        "primaryReason": "У вас уже есть спрос — люди ищут именно то, что вы построили. На этапе 100+ юзеров проблема канала решена; рост убивает проблема конверсии. Стек: (1) Bottom-of-funnel SEO: запросы типа «[продукт] vs [конкурент]», «цены [продукта]» (2) Ретаргетинг: те, кто зашёл на страницу цен, но не купил — ваши лучшие кандидаты (3) Сайты отзывов (G2, Capterra): 75% B2B покупателей проверяют их перед покупкой.",
+        "tabooChannel": "ToFU образовательный контент",
+        "tabooReason": "Образовательный контент строит осведомленность, которая у вас уже есть. Каждый ресурс здесь украден у конверсии готового спроса. Если bounce rate страницы цен >80%, у вас проблема конверсии, а не трафика. Заливать трафик в дырявую воронку — значит ускорять утечку.",
+        "bias": "Предвзятость оптимизации",
+        "biasDetail": "Дофаминовая петля новизны — генерация новых лидов дает немедленное вознаграждение. Исправление слоя конверсии когнитивно сложно и дает отложенный эффект. Мозг выбирает активность, которая кажется продуктивной, вместо той, что реально продуктивна.",
+        "buyerMode": "Усталость от принятия решений + Избегание потерь",
+        "buyerDetail": "Покупатели приходят на страницу цен в состоянии усталости — они уже сравнили 3–7 альтернатив. Они боятся выбрать неправильно больше, чем хотят выбрать правильно. Каждая убранная точка трения (таблица сравнения, ROI) снижает порог решения.",
+        "redDoorTactics": "Проведите аудит страницы цен: добавьте таблицу сравнения, ROI-калькулятор и 3+ цитаты клиентов. Замерьте конверсию до и после.",
+        "week4metric": "Конверсия лид → клиент > 5% на BOFU-лендингах",
+        "warningSignal": "Bounce rate страницы цен >80% при нулевых триалах или покупках — сломан слой конверсии",
+    },
+    "vertical_synthesizer": {
+        "name": "Вертикальный синтезатор", "icon": "[VS]",
+        "tagline": "Vertical SaaS · Фаундер-писатель · Ниша знает проблему",
+        "primaryChannel": "Гипер-нишевое SEO + Отраслевые издания",
+        "primaryReason": "Ваш покупатель ищет симптомы на языке своей индустрии — терминами, которых ваши горизонтальные конкуренты даже не знают. Стек: (1) Гипер-нишевое SEO по терминам отрасли (2) Отраслевые рассылки: найдите 3 самые читаемые в вашей нише (3) Контент для конференций и ассоциаций: одна статья в профильном журнале бьёт 50 общих постов.",
+        "tabooChannel": "Широкая поисковая реклама",
+        "tabooReason": "Широкие запросы приносят горизонтальных покупателей, для которых ваш продукт слишком сложен или дорог. Конкурировать с Notion за $10/мес — проигрышная битва. Широкая реклама убыточна для вертикального SaaS: вы проигрываете по бюджету и широте фич.",
+        "bias": "Эффект присоединения к большинству",
+        "biasDetail": "Уменьшение когнитивного диссонанса — «вертикаль слишком мала» это не анализ, а рационализация страха. Глубокое нишевание вызывает дискомфорт, закрывая ментальные двери. Но данные говорят: вертикальный SaaS побеждает за счет эффективности CAC.",
+        "buyerMode": "Когнитивная легкость + Групповое признание",
+        "buyerDetail": "Покупатели в вертикалях обрабатывают профильный язык почти без усилий — это их родная речь. Как только ваш контент использует их терминологию, срабатывает признание: «Этот человек понимает». Когнитивная легкость — это и есть механизм доверия.",
+        "redDoorTactics": "Найдите 3 самые читаемые рассылки в вашей вертикали. Предложите им практическую статью на их языке. На этой неделе.",
+        "week4metric": "20+ опт-инов из вашей специфической вертикали; минимум 1 входящий запрос на языке отрасли",
+        "warningSignal": "Трафик идет по широким горизонтальным запросам — ваше SEO привлекает не тех",
+    },
+}
+
+
+def _build_compass_email(name: str, archetype_id: str, email: str = "") -> str:
+    """HTML email with Channel Compass result delivered after email capture."""
+    arch = COMPASS_ARCHETYPES.get(archetype_id, COMPASS_ARCHETYPES["focused_builder"])
+    greeting = f"Привет, {name}," if name else "Привет,"
+    payment_url = "https://nowpayments.io/payment/?iid=4803929857"
+
+    return f"""<!DOCTYPE html>
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your GTM Audit case study</title>
-<style>
-  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-         background:#f5f5f5; margin:0; padding:32px 16px; color:#1a1a1a; }}
-  .card {{ max-width:560px; margin:0 auto; background:#fff;
-           border-radius:8px; padding:40px; border:1px solid #e5e5e5; }}
-  h1 {{ font-size:22px; margin:0 0 8px; }}
-  p  {{ font-size:15px; line-height:1.6; color:#444; margin:12px 0; }}
-  .metric {{ background:#f9f9f9; border-left:3px solid #111;
-             padding:12px 16px; margin:16px 0; font-size:14px; }}
-  .cta {{ display:inline-block; margin-top:24px; background:#111; color:#fff;
-          text-decoration:none; padding:14px 28px; border-radius:6px;
-          font-size:15px; font-weight:600; letter-spacing:.3px; }}
-  .cta:hover {{ background:#333; }}
-  .footer {{ margin-top:32px; font-size:12px; color:#999; }}
-</style>
+<title>Результат вашей GTM-диагностики</title>
 </head>
-<body>
-<div class="card">
-  <h1>Here's the real audit — before you buy.</h1>
-  <p>
-    You just ran your README through the scorecard.
-    Here's a real GTM Audit from start to finish — every document,
-    every finding, exactly as the client received it.
-  </p>
+<body style="font-family:'JetBrains Mono',Menlo,Monaco,'Courier New',monospace;background:#0d0c0b;margin:0;padding:32px 16px;color:#e0e0e0;">
+<div style="max-width:600px;margin:0 auto;background:#0d0c0b;border:1px solid #2a2a2a;padding:32px;">
 
-  <p><strong>FnKey case study — 43 stars, 0 predictable channels. We found 13 gaps.</strong></p>
-
-  <div class="metric">
-    📉 Show HN unposted → <strong>289 stars/week sitting idle</strong> (20 months of organic growth)
-  </div>
-  <div class="metric">
-    📉 README missing problem statement → <strong>56 stars/month lost in conversion</strong>
-  </div>
-  <div class="metric">
-    📉 No owned channel → <strong>25× cold start penalty</strong> on every next launch
+  <div style="color:#555;font-size:11px;border-bottom:1px solid #1e1e1e;padding-bottom:12px;margin-bottom:24px;">
+    [root@goddevit ~]$ ./channel-compass --deliver-result
   </div>
 
-  <p>
-    The audit found the gaps FnKey's founder didn't know existed.
-    The top 3 take under 3 hours to fix.
+  <p style="color:#aaa;font-size:13px;margin:0 0 8px;">{greeting}</p>
+  <p style="color:#666;font-size:12px;line-height:1.7;margin:0 0 24px;">
+    Вы запустились. Может быть, сделали пост. Может быть, вышли на Product Hunt. И тишина была громче, чем вы ожидали.<br>
+    Код был самой легкой частью — проблема канала это то, что убивает продукты, которые заслуживали успеха.<br>
+    Ниже — ваша диагностика. Внимательно прочитайте раздел про когнитивные искажения. Именно там находится реальное «бутылочное горлышко».
   </p>
 
-  <p>
-    <a href="{settings.influr_sales_page_url}" style="color:#111;">
-      → Open the full case study (all 7 documents, free to read)
-    </a>
-  </p>
-
-  <p style="margin-top:24px;">
-    <strong>Ready to see what's blocking your product?</strong><br>
-    $500 · 7 documents · 7-day delivery · 5-gap guarantee or full refund.
-  </p>
-
-  <a class="cta" href="{payment_url}">Start your audit — $500 →</a>
-
-  <div class="footer">
-    Influr Agency · GTM audits for dev/OSS founders<br>
-    influrfounder@gmail.com · No calls, fully async.
+  <div style="border:1px solid #3a3a3a;padding:16px;margin-bottom:24px;">
+    <div style="color:#555;font-size:11px;margin-bottom:6px;">АРХЕТИП ОПРЕДЕЛЕН &nbsp;·&nbsp; {arch['icon']}</div>
+    <div style="color:#e0e0e0;font-size:22px;font-weight:bold;margin-bottom:4px;">{arch['name']}</div>
+    <div style="color:#666;font-size:12px;">{arch['tagline']}</div>
   </div>
+
+  <div style="margin-bottom:24px;">
+    <div style="color:#555;font-size:11px;margin-bottom:8px;">── ОСНОВНОЙ КАНАЛ ──────────────────────</div>
+    <div style="color:#55ff55;font-size:15px;font-weight:bold;margin-bottom:8px;">{arch['primaryChannel']}</div>
+    <div style="color:#888;font-size:12px;line-height:1.7;">{arch['primaryReason']}</div>
+  </div>
+
+  <div style="margin-bottom:24px;">
+    <div style="color:#555;font-size:11px;margin-bottom:8px;">── ПРЕКРАТИТЕ ЭТО ДЕЛАТЬ ────────────────</div>
+    <div style="color:#ff5555;font-size:15px;font-weight:bold;margin-bottom:8px;">{arch['tabooChannel']}</div>
+    <div style="color:#888;font-size:12px;line-height:1.7;">{arch['tabooReason']}</div>
+  </div>
+
+  <div style="background:rgba(255,85,85,0.05);border-left:2px solid #ff5555;padding:16px;margin-bottom:24px;">
+    <div style="color:#ff5555;font-size:11px;font-weight:bold;margin-bottom:8px;">[!] КОГНИТИВНОЕ ИСКАЖЕНИЕ: {arch['bias']}</div>
+    <div style="color:#888;font-size:12px;line-height:1.7;">{arch['biasDetail']}</div>
+  </div>
+
+  <div style="background:rgba(85,255,85,0.03);border-left:2px solid #3a3a3a;padding:16px;margin-bottom:24px;">
+    <div style="color:#555;font-size:11px;font-weight:bold;margin-bottom:8px;">КАК ПОКУПАТЕЛЬ ПРИНИМАЕТ РЕШЕНИЕ: {arch['buyerMode']}</div>
+    <div style="color:#888;font-size:12px;line-height:1.7;">{arch['buyerDetail']}</div>
+  </div>
+
+  <div style="margin-bottom:24px;">
+    <div style="color:#555;font-size:11px;margin-bottom:8px;">── СДЕЛАЙТЕ ЭТО ДО ПЯТНИЦЫ ──────────────</div>
+    <div style="color:#e0e0e0;font-size:13px;line-height:1.8;">&rarr; {arch['redDoorTactics']}</div>
+  </div>
+
+  <div style="margin-bottom:32px;">
+    <div style="color:#555;font-size:11px;margin-bottom:8px;">── СИГНАЛ ЧЕРЕЗ 4 НЕДЕЛИ ────────────────</div>
+    <div style="color:#e0e0e0;font-size:13px;margin-bottom:6px;">{arch['week4metric']}</div>
+    <div style="color:#555;font-size:11px;">Если вместо этого вы видите: {arch['warningSignal']} — остановитесь и проведите диагностику, прежде чем продолжать.</div>
+  </div>
+
+  <div style="background:rgba(255,255,255,0.03);border:1px solid #2a2a2a;padding:20px;margin-bottom:32px;">
+    <div style="color:#e0e0e0;font-size:13px;font-weight:bold;margin-bottom:8px;">Канал — это только 1-й слой из 11.</div>
+    <div style="color:#888;font-size:12px;line-height:1.7;margin-bottom:16px;">
+      Компас говорит вам, куда смотреть. Полный GTM-аудит идет глубже: позиционирование, месседжинг, ICP-fit, ценообразование, онбординг, конверсия — каждый слой диагностируется для вашего конкретного продукта и стадии, с бенчмарками и конкретными шагами.<br><br>
+      Это не общие советы. И не агентский ретейнер. Это 7-дневная асинхронная диагностика — созданная для технических фаундеров, которым нужно отладить свой go-to-market, а не нанимать кого-то, чтобы он делал это за них.
+    </div>
+    <a href="{payment_url}" style="display:inline-block;background:#e0e0e0;color:#0d0c0b;font-family:inherit;font-size:13px;font-weight:bold;padding:10px 20px;text-decoration:none;">&rarr; Начать полный GTM-аудит &nbsp;($500)</a>
+    <div style="color:#555;font-size:11px;margin-top:10px;">7 дней · асинхронно · гарантия возврата денег, если мы найдем меньше 5 критических разрывов</div>
+  </div>
+
+  <div style="color:#444;font-size:11px;border-top:1px solid #1e1e1e;padding-top:16px;">
+    God Dev it &nbsp;·&nbsp; GTM для технических фаундеров<br>
+    Ответьте на это письмо — вопросы, возражения или если кажется, что архетип определен неверно.<br><br>
+    <a href="{_unsubscribe_url(email)}" style="color:#444;font-size:10px;text-decoration:underline;">Отписаться</a>
+  </div>
+
 </div>
 </body>
-</html>
-"""
+</html>"""
 
 
 # ---------------------------------------------------------------------------
@@ -100,29 +249,34 @@ class LeadService:
         self.repo   = GtmLeadRepository(db)
         self.resend = ResendClient()
 
-    def _build_payment_url(self, email: str) -> str:
-        """Personalised NOWPayments link with order_id = email."""
-        base = settings.nowpayments_payment_page_url or "https://nowpayments.io/payment/?iid=4397280030"
-        encoded = urllib.parse.quote(email, safe="")
-        return f"{base}&order_id={encoded}"
+    async def capture_compass(self, email: str, name: str, archetype: str, answers: dict) -> dict:
+        """Capture Channel Compass lead and send archetype result email."""
+        arch_name = COMPASS_ARCHETYPES.get(archetype, {}).get("name", archetype)
 
-    async def capture(self, email: str, score: int, findings: dict) -> dict:
-        """Upsert lead and send case study email."""
-        lead = self.repo.upsert(email=email, score=score, findings=findings)
-        logger.info(f"Lead captured: {email} | score={score} | status={lead.status}")
+        lead = self.repo.upsert(
+            email=email,
+            score=None,
+            findings={},
+            name=name,
+            archetype=archetype,
+            compass_answers=answers,
+            source_product="channel-compass",
+        )
+        logger.info(f"Compass lead captured: {email} | archetype={archetype}")
 
-        payment_url = self._build_payment_url(email)
         from src.services.posthog_service import posthog_service
-        posthog_service.capture(email, "payment_link_generated", {"payment_url": payment_url})
+        posthog_service.capture(email, "compass_lead_captured", {
+            "archetype": archetype,
+            "name": name,
+        })
 
         try:
             await self.resend.send_email(
                 to=email,
-                subject="FnKey case study — see a real GTM Audit before you buy",
-                html=_build_case_study_email(payment_url),
+                subject=f"Ваш результат GTM Compass: {arch_name} — стратегия канала внутри",
+                html=_build_compass_email(name, archetype, email),
             )
         except Exception as e:
-            # Don't fail the request if email send fails — lead is already saved
-            logger.error(f"Email send failed for {email}: {e}")
+            logger.error(f"Compass email send failed for {email}: {e}")
 
         return {"status": "ok", "lead_id": str(lead.id)}
