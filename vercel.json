@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/apps/gtm_channel_compass/$1"
+    }
+  ]
+}
