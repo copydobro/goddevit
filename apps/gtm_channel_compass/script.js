@@ -34,8 +34,8 @@ const ARCHETYPES = {
     content_authority: {
         name: 'Контент-авторитет', icon: '[CA]',
         tagline: 'Horizontal SaaS · Фаундер-писатель · Покупатель знает проблему',
-        primaryChannel: 'Long-tail SEO + Substack',
-        primaryReason: 'Ваш ICP находится в Системе 2 Канемана — активно исследует боль, а не решение. Они вбивают симптомы в Google: «как снизить накладные расходы», «автоматизация сверки инвойсов». Стек: (1) Long-tail SEO по симптомам — посты на 2000+ слов (2) Substack как собственная дистрибуция — стройте аудиторию вокруг проблемы, а не имени продукта (3) Посевы в сообществах: кейсы на r/SaaS приносят огромный охват. Модели для подражания: Arvid Kahl и Harry Dry.',
+        primaryChannel: 'Long-tail SEO + AEO (Answer Engine Optimization) + Substack',
+        primaryReason: 'Ваш ICP находится в Системе 2 Канемана — активно исследует боль, а не решение. Стек: (1) Long-tail SEO по симптомам — посты на 2000+ слов (2) AEO (Answer Engine Optimization) — оптимизация контента под Perplexity и ChatGPT, так как B2B-исследователи переходят туда (3) Substack как собственная дистрибуция. Модели для подражания: Arvid Kahl и Harry Dry.',
         tabooChannel: 'Платная реклама',
         tabooReason: 'Покупатели, осознающие проблему, находятся в режиме исследования — они не готовы покупать. Реклама прерывает их процесс, а не конвертирует. Разработчики сразу считывают коммерческий интерес и уходят. Каждый доллар на рекламу сейчас покупает дорогое обучение, которое контент доставил бы бесплатно и с большим доверием.',
         bias: 'Предвзятость подтверждения (Ловушка горизонтали)',
@@ -121,11 +121,6 @@ const ARCHETYPES = {
         week4metric: '20+ опт-инов из вашей специфической вертикали; минимум 1 входящий запрос на языке отрасли',
         warningSignal: 'Трафик идет по широким горизонтальным запросам — ваше SEO привлекает не тех'
     }
-};is the entire trust mechanism.',
-        redDoorTactics: 'Find the 3 most-read trade newsletters in your vertical via Google. Pitch a byline to each — a practical piece using their industry vocabulary. This week.',
-        week4metric: '20+ opt-ins from within your specific vertical; at least 1 inbound inquiry using vertical-specific language',
-        warningSignal: 'Traffic coming from broad horizontal keywords despite vertical positioning — your SEO is attracting the wrong buyers'
-    }
 };
 
 // ─── Questions ─────────────────────────────────────────────────────────────────
@@ -205,13 +200,13 @@ const STAGE_COSTS = {
     A: {
         label: t('q8_a'),
         headline: 'Бесконечный цикл валидации без выручки',
-        body: 'Без четкого канала вы тратите 80% времени на "улучшение продукта" вместо поиска юзеров. Это путь к медленной смерти через "продукт ради продукта".',
+        body: 'Без четкого канала вы тратите 80% времени на "улучшение продукта" вместо поиска юзеров. Ошибка здесь стоит $40K–$150K упущенной выгоды.',
         source: "[Статистика: 34% стартапов умирают из-за отсутствия product-market fit]"
     },
     B: {
         label: t('q8_b'),
-        headline: 'Месяцы работы без повторяемого пайплайна',
-        body: "Каналы с высоким CAC (общая реклама, массовый контент) без отлаженной воронки = слитый бюджет и ноль лидов. Сначала один канал. Один кейс. Потом масштаб.",
+        headline: 'Масштабирование неработающей воронки',
+        body: "Масштабирование не того канала на этом этапе сожжёт от $250K до $500K вашего бюджета до того, как вы выявите ошибку.",
         source: "[Методология: Four Fits Framework]"
     },
     C: {
@@ -345,19 +340,38 @@ function screenFlash() {
     dom.flash.classList.add('flash-animate');
 }
 
+function getExpectedPathLength(answers) {
+    if (!answers.Q1) return 4;
+    if (answers.Q1 === 'A') return 2;
+    if (answers.Q2 === 'A') return 4;
+    if (answers.Q2 === 'C') return 4;
+    if (answers.Q2 === 'B') {
+        if (answers.Q4 === 'A') return 4;
+        if (answers.Q4 === 'B') {
+            if (answers.Q6 === 'A') return 5;
+            if (answers.Q6 === 'B') return 6;
+        }
+        return 5;
+    }
+    return 4;
+}
+
 function updateProgress(currentQ) {
     if (!currentQ || currentQ === 'INTRO') {
         dom.progressBar.style.display = 'none';
         return;
     }
+    const expected = getExpectedPathLength(state.answers);
     const stepNum = state.questionPath.length;
-    const maxSteps = 6;
-    const filled = Math.min(Math.round((stepNum / maxSteps) * 20), 20);
+    const ratio = Math.min(stepNum / expected, 1);
+    const filled = Math.round(ratio * 20);
     const empty = 20 - filled;
+    const percentage = Math.round(ratio * 100);
+    
     dom.progressText.innerHTML =
         `<span class="progress-fill">${'█'.repeat(filled)}</span>` +
         `<span class="progress-step">${'░'.repeat(empty)}</span>` +
-        `  ${t('progress_step', {num: stepNum + 1})}  ──  ${currentQ}`;
+        `  ${t('progress_step', {percent: percentage})}  ──  NODE ${currentQ}`;
     dom.progressBar.style.display = 'block';
 }
 
@@ -720,6 +734,13 @@ function renderResult() {
             <div class="mind-header">${t('buyer_mode_label')}</div>
             <div class="mind-mode">${arch.buyerMode}</div>
             <div class="mind-detail">${arch.buyerDetail}</div>
+        </div>
+
+        <div class="cost-block" style="margin-top: 24px; margin-bottom: 24px;">
+            <div class="section-label" style="border-bottom-color: rgba(244,200,66,0.3); color: var(--yellow); opacity: 0.8;">ПРОТОКОЛ МАСШТАБИРОВАНИЯ (LOSS CALCULATOR)</div>
+            <div class="cost-headline">${stageCost.headline}</div>
+            <div class="cost-body">${stageCost.body}</div>
+            <div class="cost-source">${stageCost.source}</div>
         </div>
 
         <div class="result-section">

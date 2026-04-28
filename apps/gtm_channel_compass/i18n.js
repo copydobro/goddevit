@@ -27,8 +27,8 @@ const I18N = {
 // ═════════════════════════════════════════════════════════════════════════
 en: {
     // --- Meta / HTML ---
-    meta_title: 'GTM Channel Compass — Find Your Distribution Channel in 8 Questions',
-    meta_description: 'Stop guessing your GTM channel. 8-question diagnostic maps your product, stage, and founder type to the highest-leverage distribution move. Free. No fluff.',
+    meta_title: 'GTM Channel Compass — Find Your Distribution Channel',
+    meta_description: 'Stop guessing your GTM channel. Dynamic diagnostic maps your product, stage, and founder type to the highest-leverage distribution move. Free. No fluff.',
 
     // --- Boot ---
     boot_1: '[ OK ] Initializing GTM Channel Compass v1.0.0...',
@@ -40,13 +40,13 @@ en: {
     // --- Intro ---
     intro_cmd: '[root@goddevit ~]$ ./channel-compass --init\n\nStop guessing. Engineer your distribution.\n',
     intro_stat: '62% of technical founders fail not because of bad code, but because of <strong>"Channel-Model Mismatch"</strong>. Most burn 6-18 months on SEO or Ads that were never meant to work for their stage.',
-    intro_sub: 'Our 8-layer diagnostic (Four Fits Matrix) maps your product across ACV, founder skill, and buyer intent to calculate your optimal path.',
+    intro_sub: 'The algorithm uses Factual Framing: we don\'t ask 50 psychological questions. The system tracks hard behavioral markers (ACV, time allocation, intent) to dynamically map your optimal distribution path.',
     intro_out_label: 'In 2 minutes, you will get:',
     intro_b1: 'Your Founder-Channel Archetype',
     intro_b2: 'The "Alpha" Channel (Highest leverage point)',
     intro_b3: 'The "Taboo" List (What\'s burning your runway)',
     intro_b4: 'Week-1 Tactical Roadmap (Tools + Actions)',
-    intro_cta_hint: '[ Press ENTER to start the 8-question diagnostic ]',
+    intro_cta_hint: '[ Press ENTER to start the diagnostic algorithm ]',
     intro_start_btn: 'Start Diagnostic →',
 
     // --- Questions ---
@@ -96,7 +96,7 @@ en: {
 
     // --- Email Gate ---
     gate_title: 'Diagnostic Complete. <br>Your {archetype} roadmap is ready.',
-    gate_text: 'We\'ve processed your profile through the 8-layer founder-channel fit matrix. We\'ve identified the <strong>primary distribution leak</strong> in your current model and mapped your path to a repeatable sales motion.',
+    gate_text: 'We\'ve processed your profile through the Founder-Channel Fit matrix. We\'ve identified the <strong>primary distribution leak</strong> in your current model and mapped your path to a repeatable sales motion.',
     gate_b1: '<strong>1. The "Alpha" Channel</strong> — The single high-leverage channel for your founders-type.',
     gate_b2: '<strong>2. The Taboo List</strong> — 3 "best practices" you must stop immediately to save runway.',
     gate_b3: '<strong>3. Week-1 Tactical Plan</strong> — 3 specific actions + named tools for this week.',
@@ -145,7 +145,7 @@ en: {
     share_text: 'I just found out I\'m a "{archetype}" founder.\nMy GTM channel: {channel}.\nArchetype test → {url}',
 
     // --- Progress ---
-    progress_step: 'Step {num}',
+    progress_step: 'Analysis: {percent}%',
 
     // --- LLM Prompt Language ---
     llm_lang: 'English'
@@ -156,8 +156,8 @@ en: {
 // ═════════════════════════════════════════════════════════════════════════
 ru: {
     // --- Meta / HTML ---
-    meta_title: 'GTM Channel Compass — Найди свой канал дистрибуции за 8 вопросов',
-    meta_description: 'Перестань гадать с каналом. 8-вопросная диагностика маппит продукт, стадию и тип фаундера на самый высокорычажный ход. Бесплатно. Без воды.',
+    meta_title: 'GTM Channel Compass — Найди свой канал дистрибуции',
+    meta_description: 'Перестань гадать с каналом. Динамическая диагностика маппит продукт, стадию и тип фаундера на самый высокорычажный ход. Бесплатно. Без воды.',
 
     // --- Boot ---
     boot_1: '[ OK ] Инициализация GTM Channel Compass v1.0.0...',
@@ -169,20 +169,20 @@ ru: {
     // --- Intro ---
     intro_cmd: '[root@goddevit ~]$ ./channel-compass --init\n\nХватит гадать. Инженерь свою дистрибуцию.\n',
     intro_stat: '62% технических фаундеров проваливаются не из-за плохого кода, а из-за <strong>«Channel-Model Mismatch»</strong> — несовпадения канала и модели. Большинство сжигают 6–18 месяцев на SEO или рекламу, которые никогда не должны были работать на их стадии.',
-    intro_sub: 'Наша 8-слойная диагностика (Four Fits Matrix) маппит твой продукт по ACV, скиллу фаундера и намерению покупателя, чтобы рассчитать оптимальный путь.',
+    intro_sub: 'Алгоритм использует методологию Factual Framing: мы не задаем 50 психологических вопросов. Система отслеживает жесткие поведенческие маркеры (ACV, распределение времени, интент), динамически отсекая лишние ветки и маппя твой профиль на оптимальный канал.',
     intro_out_label: 'Через 2 минуты ты получишь:',
     intro_b1: 'Твой архетип Фаундер-Канал',
     intro_b2: '«Альфа»-канал (точка максимального рычага)',
     intro_b3: '«Табу»-лист (что прямо сейчас сжигает runway)',
     intro_b4: 'Тактический план на Неделю 1 (инструменты + действия)',
-    intro_cta_hint: '[ Нажми ENTER чтобы начать 8-вопросную диагностику ]',
+    intro_cta_hint: '[ Нажми ENTER чтобы запустить алгоритм диагностики ]',
     intro_start_btn: 'Начать диагностику →',
 
     // --- Questions ---
-    q1_prompt: 'Для кого этот продукт и как его покупают?',
-    q1_context: 'Посмотри на свой код и страницу с ценами. Фокус на реальном рабочем процессе покупателя — не на категорийном ярлыке из питча.',
-    q1_a: 'Персональное, лайфстайл или социальное использование — покупает индивидуальный потребитель',
-    q1_b: 'Код, API или B2B-утилита — покупает разработчик, команда или бизнес',
+    q1_prompt: 'Изучи свою кодовую базу, roadmap и страницу с ценами. Какая базовая ценность требуется от юзера?',
+    q1_context: 'Фокус на том, кто физически платит и какой процесс он должен пройти для получения ценности.',
+    q1_a: 'Персональное использование, социальная механика — платит индивидуальный потребитель',
+    q1_b: 'Выполнение B2B задач, инфраструктура, код — платит разработчик, команда или бизнес',
 
     q2_prompt: 'Что заняло 80% твоего времени за последние 7 дней?',
     q2_context: 'Открой календарь, историю коммитов и браузер. Чем ты реально занимался большую часть рабочих часов?',
@@ -210,22 +210,22 @@ ru: {
     q6_a: 'Симптомы боли ("как сократить compliance-нагрузку") — они ещё не знают, что софт это ответ',
     q6_b: 'Конкретные категории ПО, сравнения вендоров или запросы по фичам',
 
-    q7_prompt: 'Когда покупатель попадает на твой сайт — ему нужно образование или таблица сравнения?',
-    q7_context: 'Проверь аналитику. Какие страницы посещают? Какие вопросы появляются в саппорте или фидбеке по триалу?',
-    q7_a: 'Страница цен, таблица сравнения, ROI-калькулятор — готов покупать, нужна валидация',
-    q7_b: 'Понять ваш уникальный подход, прежде чем сравнивать с альтернативами',
+    q7_prompt: 'Что является главным триггером "Ага-момента" (Aha-moment) в твоем продукте?',
+    q7_context: 'Что заставляет пользователя понять ценность и возвращаться? Используй хард-дату: Retention rate, Time-to-Value, Activation rate.',
+    q7_a: 'Быстрый Time-to-Value, мгновенная польза после простого онбординга',
+    q7_b: 'Глубокая интеграция, долгосрочная польза, сложный сетап с высоким Retention',
 
     q8_prompt: 'Какая у тебя текущая стадия роста?',
     q8_context: 'Считай активных юзеров или платящих клиентов — не регистрации. Будь честен насчёт силы сигнала.',
-    q8_a: '0–10 юзеров — валидирую проблему, повторяемого процесса продаж пока нет',
-    q8_b: '10–100 юзеров — ищу паттерны, иду к первому повторяемому каналу',
-    q8_c: '100+ юзеров — есть сигнал спроса, готов масштабировать проверенный канал',
+    q8_a: '0–10 юзеров — Ошибка канала здесь стоит $40K–$150K упущенной выгоды. Нужна 100% ручная валидация.',
+    q8_b: '10–100 юзеров — Масштабирование не того канала сожжёт $250K–$500K бюджета до выявления ошибки.',
+    q8_c: '100+ юзеров — У 70% scale-ups GTM-бюджет сжигается впустую из-за неверного микса каналов.',
 
     question_hint: 'Нажми {keys} чтобы выбрать — или кликни на вариант',
 
     // --- Email Gate ---
     gate_title: 'Диагностика завершена. <br>Твой роадмап «{archetype}» готов.',
-    gate_text: 'Мы прогнали твой профиль через 8-слойную матрицу фаундер-канал фит. Мы выявили <strong>основную утечку дистрибуции</strong> в твоей текущей модели и построили путь к повторяемой продажной воронке.',
+    gate_text: 'Мы прогнали твой профиль через матрицу Фаундер-Канал Фит. Мы выявили <strong>основную утечку дистрибуции</strong> в твоей текущей модели и построили путь к повторяемой продажной воронке.',
     gate_b1: '<strong>1. «Альфа»-канал</strong> — Единственный высокорычажный канал для твоего типа фаундера.',
     gate_b2: '<strong>2. Табу-лист</strong> — 3 «лучших практики», которые надо прекратить немедленно, чтобы сохранить runway.',
     gate_b3: '<strong>3. Тактический план Неделя 1</strong> — 3 конкретных действия + названные инструменты на эту неделю.',
@@ -274,7 +274,7 @@ ru: {
     share_text: 'Я только что узнал, что я фаундер-«{archetype}».\nМой GTM-канал: {channel}.\nТест архетипа → {url}',
 
     // --- Progress ---
-    progress_step: 'Шаг {num}',
+    progress_step: 'Анализ: {percent}%',
 
     // --- LLM Prompt Language ---
     llm_lang: 'Russian'

@@ -77,10 +77,15 @@ class NOWPaymentsClient:
 
     def extract_order_id(self, payload: Dict[str, Any]) -> str:
         """
-        Extract the order_id from the IPN payload.
-        We pass the lead's email as order_id in the payment link URL.
+        Extract the client email from the IPN payload.
+        NOWPayments sends the payer's email in 'payer_email'.
+        Falls back to order_id / order_description for manual invoices.
         """
-        return payload.get("order_id", "") or payload.get("order_description", "")
+        return (
+            payload.get("payer_email", "")
+            or payload.get("order_id", "")
+            or payload.get("order_description", "")
+        )
 
     def extract_payment_id(self, payload: Dict[str, Any]) -> str:
         return str(payload.get("payment_id", ""))

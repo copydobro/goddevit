@@ -151,7 +151,7 @@ def _build_workspace_blocks(client_email: str, score: Optional[int]) -> list:
     # --- CONTACT ---
     blocks.extend([
         _h2("📬 Contact"),
-        _p("Questions at any point → influrfounder@gmail.com"),
+        _p("Questions at any point → hello@goddevit.tech"),
         _p("No calls needed. All async."),
     ])
 

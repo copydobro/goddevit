@@ -1,99 +1,99 @@
 # FnKey.app
 
-A tiny Rust menu bar app for macOS. Hold Fn, speak, paste. Microphone is only active while you hold the key — you'll see the yellow mic indicator in macOS as confirmation.
+Крошечное приложение в меню macOS. Удерживай Fn, говори, вставляй. Микрофон активен только во время удержания клавиши — желтый индикатор микрофона в macOS служит подтверждением.
 
 <p align="center"><img src="menu-bar.png" alt="FnKey menu bar" width="278"></p>
 
 <p align="center"><img src="demo.gif" alt="FnKey demo" width="600"></p>
 
-If you find FnKey useful, please [star the repo](https://github.com/evoleinik/fnkey) — it helps others discover it.
+Если FnKey оказался полезным, пожалуйста, [поставь звезду репозиторию](https://github.com/evoleinik/fnkey) — это помогает другим узнать о проекте.
 
-## Install
+## Установка
 
-1. Download from [Releases](https://github.com/evoleinik/fnkey/releases):
+1. Скачай из раздела [Releases](https://github.com/evoleinik/fnkey/releases):
    - **Apple Silicon** (M1/M2/M3): `FnKey-arm64.zip`
    - **Intel**: `FnKey-x64.zip`
 
-2. Unzip and move to Applications:
+2. Распакуй и перемести в Applications:
    ```bash
    unzip FnKey-arm64.zip
    mv FnKey.app /Applications/
    ```
 
-3. Set your API key(s):
+3. Установи API-ключ(и):
    ```bash
    mkdir -p ~/.config/fnkey
 
-   # Deepgram (streaming, recommended) — $200 free credit
+   # Deepgram (стриминг, рекомендуется) — $200 бесплатного кредита
    echo 'your-deepgram-key' > ~/.config/fnkey/deepgram_key
 
-   # Groq (batch fallback if no Deepgram key)
+   # Groq (резервный вариант, если нет ключа Deepgram)
    echo 'your-groq-key' > ~/.config/fnkey/api_key
    ```
-   Get keys at [console.deepgram.com](https://console.deepgram.com) and [console.groq.com](https://console.groq.com)
+   Получи ключи на [console.deepgram.com](https://console.deepgram.com) и [console.groq.com](https://console.groq.com)
 
-4. Launch:
+4. Запусти:
    ```bash
    open /Applications/FnKey.app
    ```
 
-5. Grant permissions in **System Settings → Privacy & Security**:
+5. Предоставь разрешения в **System Settings → Privacy & Security**:
 
-   | Permission | Purpose | How to Grant |
+   | Разрешение | Цель | Как предоставить |
    |------------|---------|--------------|
-   | **Input Monitoring** | Detect Fn key press | Add FnKey.app via + button |
-   | **Microphone** | Record voice | Prompted on first use, or add manually |
-   | **Accessibility** | Auto-paste text | Add FnKey.app via + button |
+   | **Input Monitoring** | Обнаружение нажатия клавиши Fn | Добавь FnKey.app через кнопку + |
+   | **Microphone** | Запись голоса | Запросит при первом использовании или добавь вручную |
+   | **Accessibility** | Автоматическая вставка текста | Добавь FnKey.app через кнопку + |
 
-   Build script preserves permissions across rebuilds when using `./build-app.sh`.
+   Скрипт сборки сохраняет разрешения при пересборке при использовании `./build-app.sh`.
 
-## Usage
+## Использование
 
-- Hold **Fn** and speak → transcription
-- Release to transcribe and paste
-- Click menu bar icon (○) to toggle **Press Return after paste** (sends Return key after pasting)
-- Click menu bar icon (○) → **Edit Keywords…** to add custom vocabulary (opens in default text editor)
-- Click menu bar icon (○) → Quit to exit
+- Удерживай **Fn** и говори → транскрипция
+- Отпусти, чтобы транскрибировать и вставить
+- Нажми на иконку в меню (○), чтобы переключить **Press Return after paste** (отправляет клавишу Return после вставки)
+- Нажми на иконку в меню (○) → **Edit Keywords…**, чтобы добавить пользовательский словарь (откроется в текстовом редакторе по умолчанию)
+- Нажми на иконку в меню (○) → Quit для выхода
 
-The icon changes: ○ (idle) → ● (recording)
+Иконка меняется: ○ (ожидание) → ● (запись)
 
-## Transcription Backends
+## Бэкенды транскрипции
 
-| Backend | Mode | Config file | How it works |
+| Бэкенд | Режим | Файл конфигурации | Как это работает |
 |---------|------|-------------|--------------|
-| **Deepgram Nova-3** | Streaming | `deepgram_key` | Audio streams via WebSocket while you speak. Fastest. |
-| **Groq Whisper** | Batch | `api_key` | Full clip sent after release. Fallback if no Deepgram key. |
+| **Deepgram Nova-3** | Стриминг | `deepgram_key` | Аудио передается через WebSocket, пока ты говоришь. Самый быстрый вариант. |
+| **Groq Whisper** | Пакетный | `api_key` | Полная запись отправляется после отпускания клавиши. Резервный вариант. |
 
-If both keys are configured, Deepgram streaming is preferred.
+Если настроены оба ключа, предпочтение отдается стримингу Deepgram.
 
-## Build from source
+## Сборка из исходников
 
 ```bash
 ./build-app.sh
 ```
 
-This builds and installs directly to `/Applications/FnKey.app`, preserving permissions across rebuilds.
+Это соберет и установит приложение напрямую в `/Applications/FnKey.app`, сохраняя разрешения.
 
-Note: If cargo isn't found, run with login shell: `/bin/bash -l -c './build-app.sh'`
+Примечание: если `cargo` не найден, запусти через оболочку входа: `/bin/bash -l -c './build-app.sh'`
 
-## Features
+## Возможности
 
-- **Real-time streaming** - Audio streams to Deepgram as you speak (no waiting)
-- **Deepgram Nova-3** - Latest model with smart formatting and punctuation
-- **Groq fallback** - Whisper large-v3 batch mode if Deepgram unavailable
-- **Audio enhancement** - DC offset removal, high-pass filter, peak normalization (Groq mode)
-- **Auto sample rate** - Uses device's native sample rate, resamples to 16kHz for Deepgram
-- **Non-blocking** - WebSocket connects in background, never freezes the app
-- **Auto-return mode** - Optional Return keypress after paste (toggle in menu bar)
+- **Стриминг в реальном времени** - аудио передается в Deepgram по мере речи (без ожиданий)
+- **Deepgram Nova-3** - новейшая модель с умным форматированием и пунктуацией
+- **Groq fallback** - режим Whisper large-v3, если Deepgram недоступен
+- **Улучшение звука** - удаление смещения DC, ФВЧ, нормализация пиков (в режиме Groq)
+- **Автоматическая частота дискретизации** - использует нативную частоту устройства, ресэмплирует до 16 кГц для Deepgram
+- **Неблокирующий режим** - WebSocket подключается в фоне, не замораживая приложение
+- **Режим авто-возврата** - опциональный возврат каретки после вставки (переключается в меню)
 
-## Custom Keywords
+## Пользовательские ключевые слова
 
-Add words the transcription engine often gets wrong (proper nouns, technical terms):
+Добавь слова, в которых движок часто ошибается (имена собственные, технические термины):
 
 ```bash
-# Edit via menu bar → "Edit Keywords…", or directly:
+# Редактируй через меню → "Edit Keywords…", или напрямую:
 cat > ~/.config/fnkey/keywords << 'EOF'
-# One term per line
+# Одно слово в строке
 Anthropic
 Claude
 cron job
@@ -101,17 +101,17 @@ Kubernetes
 EOF
 ```
 
-Keywords are sent as `keyterm` to Deepgram (Nova-3) and as `prompt` hints to Groq/Whisper. Reloaded each recording session.
+Ключевые слова отправляются как `keyterm` в Deepgram (Nova-3) и как `prompt` для Groq/Whisper. Перезагружаются перед каждой сессией записи.
 
 ## TODO
 
-- **No-speech detection** - Use `verbose_json` response format and check `no_speech_prob` to skip silent recordings
-- **Backend toggle** - Menu bar option to switch between Deepgram and Groq
+- **Детекция отсутствия речи** - использовать формат `verbose_json` и проверять `no_speech_prob`, чтобы пропускать пустые записи
+- **Переключатель бэкенда** - опция в меню для переключения между Deepgram и Groq
 
-## Notes
+## Заметки
 
-- Falls back to Option key if Fn not detected after 5s
+- Использует клавишу Option, если Fn не обнаружена в течение 5 секунд
 
-## Known Limitations
+## Известные ограничения
 
-**Slight recording delay**: There's a brief moment when you start speaking before audio capture begins. This is a deliberate tradeoff — eliminating this delay would require the microphone to be always active, showing the yellow indicator constantly. The current design prioritizes privacy: the microphone only activates when you press the Fn key.
+**Небольшая задержка записи**: Есть короткий момент при начале речи перед тем, как начнется захват аудио. Это осознанный компромисс — устранение этой задержки потребовало бы постоянной активности микрофона и желтого индикатора. Текущий дизайн приоритизирует приватность: микрофон включается только при нажатии клавиши Fn.

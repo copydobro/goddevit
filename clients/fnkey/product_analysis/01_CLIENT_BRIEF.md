@@ -1,4 +1,4 @@
-# FnKey — Client Brief Template
+# FnKey — Шаблон клиентского брифа
 
 > Используется как онбординг-бриф перед GTM-аудитом.
 > Вопросы 1-4 закрыты из открытых источников. Вопросы 5-6 — только от клиента.
@@ -9,32 +9,32 @@
 
 | Поле | Данные |
 |------|--------|
-| Продукт | macOS menu bar, Hold Fn → speak → paste. Streams to Deepgram Nova-3, fallback Groq Whisper. Rust, GPL-3.0, бесплатно. |
-| JTBD (гипотеза) | AI-assisted coding: voice → 3x longer prompts → better Claude output |
-| Тракция | 43 GitHub stars, 7 форков, 107 PH upvotes (#15 дня) |
+| Продукт | macOS menu bar app, Удерживай Fn → говори → вставляй. Стриминг в Deepgram Nova-3, резервный вариант Groq Whisper. Rust, GPL-3.0, бесплатно. |
+| JTBD (гипотеза) | AI-assisted coding: голос → в 3 раза более длинные промпты → лучший результат от Claude |
+| Тракция | 43 звезды на GitHub, 7 форков, 107 апвоутов на PH (#15 продукта дня) |
 | Запуски | Product Hunt, dev.to (2 поста), личный блог, awesome-mac |
-| Аудитория (публично) | Devs, Rust community, macOS power users |
+| Аудитория (публично) | Разработчики, сообщество Rust, опытные пользователи macOS |
 
 ---
 
 ## Три вопроса — только от клиента
 
-**1. Who is actually using it?**
+**1. Кто на самом деле этим пользуется?**
 
-Not who you built it for — who showed up.
-Any signals: GitHub issues, PH comments, DMs, people who starred and then reached out.
-Even a rough guess: "mostly devs using Claude Code" or "no idea, never heard back from anyone."
-
----
-
-**2. What did you intentionally do to get traction — vs what happened by itself?**
-
-Example: "I posted on dev.to deliberately. The awesome-mac listing I had nothing to do with."
-We want to separate signal from noise before we diagnose.
+Не те, для кого вы это строили, а те, кто реально пришел.
+Любые сигналы: GitHub issues, комментарии на PH, прямые сообщения, люди, которые ставили звезды и выходили на связь.
+Даже примерная догадка: "в основном девы, использующие Claude Code" или "понятия не имею, ни разу ни от кого ничего не слышал".
 
 ---
 
-**3. What's the GTM problem in your own words?**
+**2. Что вы сделали намеренно для получения тракции, а что произошло само собой?**
 
-Not the polished version. The thing that's actually annoying you right now.
-"I shipped it, people starred it, nothing else happened" is a complete answer.
+Пример: "Я специально запостил на dev.to. К листингу awesome-mac я не имею никакого отношения".
+Нам нужно отделить сигнал от шума, прежде чем ставить диагноз.
+
+---
+
+**3. В чем проблема GTM вашими собственными словами?**
+
+Не "отполированная" версия для презентаций. А то, что вас реально бесит прямо сейчас.
+"Я выпустил продукт, люди поставили звезды, больше ничего не произошло" — это исчерпывающий ответ.

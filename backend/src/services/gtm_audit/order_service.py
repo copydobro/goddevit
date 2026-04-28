@@ -80,12 +80,12 @@ def _client_onboarding_email(client_email: str, workspace_url: str) -> str:
   <a class="cta" href="{workspace_url}">Open your workspace →</a>
 
   <p style="margin-top:24px; font-size:13px; color:#888;">
-    Questions? Reply to this email or reach out at influrfounder@gmail.com.<br>
+    Questions? Reply to this email or reach out at hello@goddevit.tech.<br>
     No calls needed. Everything is async.
   </p>
 
   <div class="footer">
-    Influr Agency · GTM audits for dev/OSS founders<br>
+    God Dev it · GTM audits for dev/OSS founders<br>
     This email was sent to {client_email}
   </div>
 </div>

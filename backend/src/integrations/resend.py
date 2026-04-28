@@ -12,7 +12,7 @@ class ResendClient:
 
     def __init__(self):
         self.api_key = settings.resend_api_key
-        self.from_email = settings.resend_from_email or "Influr <hello@influr.io>"
+        self.from_email = settings.resend_from_email or "God Dev it <hello@goddevit.tech>"
 
     async def send_email(
         self,

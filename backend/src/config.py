@@ -1,7 +1,7 @@
 """Agency backend config."""
 from typing import Optional
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic import Field, field_validator
 
 
 class Settings(BaseSettings):
@@ -9,7 +9,17 @@ class Settings(BaseSettings):
 
     # Email
     resend_api_key: Optional[str] = Field(default=None, env="RESEND_API_KEY")
-    resend_from_email: str = Field(default="Influr <hello@influr.io>", env="RESEND_FROM_EMAIL")
+    resend_from_email: str = Field(default="God Dev it <hello@goddevit.tech>", env="RESEND_FROM_EMAIL")
+
+    @field_validator(
+        "resend_api_key", "resend_from_email", "notion_api_key",
+        "notion_client_portals_db_id", "influr_founder_email",
+        "posthog_api_key", "database_url",
+        mode="before",
+    )
+    @classmethod
+    def strip_whitespace(cls, v):
+        return v.strip() if isinstance(v, str) else v
 
     # Payments
     nowpayments_ipn_secret_key: Optional[str] = Field(default=None, env="NOWPAYMENTS_IPN_SECRET_KEY")
@@ -25,12 +35,15 @@ class Settings(BaseSettings):
         env="NOTION_CLIENT_PORTALS_DB_ID",
     )
 
-    # Influr
+    # God Dev it
     influr_sales_page_url: str = Field(
         default="https://subdued-basket-c56.notion.site/The-Cold-Start-Audit-See-a-real-one-before-you-buy-32ff225f613d8120a597f1ea921feff8",
         env="INFLUR_SALES_PAGE_URL",
     )
     influr_founder_email: Optional[str] = Field(default=None, env="INFLUR_FOUNDER_EMAIL")
+
+    # API
+    api_base_url: str = Field(default="https://api.goddevit.tech", env="API_BASE_URL")
 
     # PostHog
     posthog_api_key: Optional[str] = Field(default=None, env="POSTHOG_API_KEY")

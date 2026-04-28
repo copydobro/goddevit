@@ -1,11 +1,12 @@
-"""Influr Agency — GTM Audit backend."""
+"""God Dev it — GTM Audit backend."""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.api.gtm_audit import router as gtm_router
 from src.api.tracking import router as tracking_router
-from src.database import create_tables
+from src.database import create_tables, run_column_migrations
+from src.models import gtm_lead  # ensure models registered before create_tables()
 
-app = FastAPI(title="Influr Agency API", version="0.1.0")
+app = FastAPI(title="God Dev it API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -22,8 +23,9 @@ app.include_router(tracking_router)
 async def startup():
     try:
         create_tables()
+        run_column_migrations()
     except Exception as exc:
-        print(f"DB startup warning (tables not created): {exc}")
+        print(f"DB startup warning: {exc}")
 
 
 @app.get("/health")

@@ -157,7 +157,6 @@ def _build_compass_email(name: str, archetype_id: str, email: str = "") -> str:
     """HTML email with Channel Compass result delivered after email capture."""
     arch = COMPASS_ARCHETYPES.get(archetype_id, COMPASS_ARCHETYPES["focused_builder"])
     greeting = f"Привет, {name}," if name else "Привет,"
-    payment_url = "https://nowpayments.io/payment/?iid=4803929857"
 
     return f"""<!DOCTYPE html>
 <html lang="ru">
@@ -166,76 +165,99 @@ def _build_compass_email(name: str, archetype_id: str, email: str = "") -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Результат вашей GTM-диагностики</title>
 </head>
-<body style="font-family:'JetBrains Mono',Menlo,Monaco,'Courier New',monospace;background:#0d0c0b;margin:0;padding:32px 16px;color:#e0e0e0;">
-<div style="max-width:600px;margin:0 auto;background:#0d0c0b;border:1px solid #2a2a2a;padding:32px;">
+<body style="margin: 0; padding: 0; background-color: #0d0c0b; -webkit-text-size-adjust: 100%;">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#0d0c0b" style="background-color: #0d0c0b; font-family: 'JetBrains Mono', Menlo, Monaco, 'Courier New', monospace; color: #e0e0e0;">
+  <tr>
+    <td align="center" style="padding: 32px 16px;">
+      <table width="100%" border="0" cellspacing="0" cellpadding="32" style="max-width: 600px; background-color: #0d0c0b; border: 1px solid #2a2a2a; text-align: left; margin: 0 auto;">
+        <tr>
+          <td>
+            <div style="color:#555;font-size:11px;border-bottom:1px solid #1e1e1e;padding-bottom:12px;margin-bottom:24px;">
+              [root@goddevit ~]$ ./channel-compass --deliver-result
+            </div>
 
-  <div style="color:#555;font-size:11px;border-bottom:1px solid #1e1e1e;padding-bottom:12px;margin-bottom:24px;">
-    [root@goddevit ~]$ ./channel-compass --deliver-result
-  </div>
+            <p style="color:#aaa;font-size:13px;margin:0 0 8px;">{greeting}</p>
+            <p style="color:#e0e0e0;font-size:12px;line-height:1.7;margin:0 0 24px;">
+              Вы запустились. Может быть, сделали пост. Может быть, вышли на Product Hunt. И тишина была громче, чем вы ожидали.<br>
+              Код был самой легкой частью — проблема канала это то, что убивает продукты, которые заслуживали успеха.<br>
+              Ниже — ваша диагностика. Внимательно прочитайте раздел про когнитивные искажения. Именно там находится реальное «бутылочное горлышко».
+            </p>
 
-  <p style="color:#aaa;font-size:13px;margin:0 0 8px;">{greeting}</p>
-  <p style="color:#666;font-size:12px;line-height:1.7;margin:0 0 24px;">
-    Вы запустились. Может быть, сделали пост. Может быть, вышли на Product Hunt. И тишина была громче, чем вы ожидали.<br>
-    Код был самой легкой частью — проблема канала это то, что убивает продукты, которые заслуживали успеха.<br>
-    Ниже — ваша диагностика. Внимательно прочитайте раздел про когнитивные искажения. Именно там находится реальное «бутылочное горлышко».
-  </p>
+            <table width="100%" border="0" cellspacing="0" cellpadding="16" style="border:1px solid #3a3a3a;margin-bottom:24px;background-color:#0d0c0b;">
+              <tr>
+                <td>
+                  <div style="color:#555;font-size:11px;margin-bottom:6px;">АРХЕТИП ОПРЕДЕЛЕН &nbsp;·&nbsp; {arch['icon']}</div>
+                  <div style="color:#e0e0e0;font-size:22px;font-weight:bold;margin-bottom:4px;">{arch['name']}</div>
+                  <div style="color:#aaa;font-size:12px;">{arch['tagline']}</div>
+                </td>
+              </tr>
+            </table>
 
-  <div style="border:1px solid #3a3a3a;padding:16px;margin-bottom:24px;">
-    <div style="color:#555;font-size:11px;margin-bottom:6px;">АРХЕТИП ОПРЕДЕЛЕН &nbsp;·&nbsp; {arch['icon']}</div>
-    <div style="color:#e0e0e0;font-size:22px;font-weight:bold;margin-bottom:4px;">{arch['name']}</div>
-    <div style="color:#666;font-size:12px;">{arch['tagline']}</div>
-  </div>
+            <div style="margin-bottom:24px;">
+              <div style="color:#555;font-size:11px;margin-bottom:8px;">── ОСНОВНОЙ КАНАЛ ──────────────────────</div>
+              <div style="color:#55ff55;font-size:15px;font-weight:bold;margin-bottom:8px;">{arch['primaryChannel']}</div>
+              <div style="color:#e0e0e0;font-size:12px;line-height:1.7;">{arch['primaryReason']}</div>
+            </div>
 
-  <div style="margin-bottom:24px;">
-    <div style="color:#555;font-size:11px;margin-bottom:8px;">── ОСНОВНОЙ КАНАЛ ──────────────────────</div>
-    <div style="color:#55ff55;font-size:15px;font-weight:bold;margin-bottom:8px;">{arch['primaryChannel']}</div>
-    <div style="color:#888;font-size:12px;line-height:1.7;">{arch['primaryReason']}</div>
-  </div>
+            <div style="margin-bottom:24px;">
+              <div style="color:#555;font-size:11px;margin-bottom:8px;">── ПРЕКРАТИТЕ ЭТО ДЕЛАТЬ ────────────────</div>
+              <div style="color:#ff5555;font-size:15px;font-weight:bold;margin-bottom:8px;">{arch['tabooChannel']}</div>
+              <div style="color:#e0e0e0;font-size:12px;line-height:1.7;">{arch['tabooReason']}</div>
+            </div>
 
-  <div style="margin-bottom:24px;">
-    <div style="color:#555;font-size:11px;margin-bottom:8px;">── ПРЕКРАТИТЕ ЭТО ДЕЛАТЬ ────────────────</div>
-    <div style="color:#ff5555;font-size:15px;font-weight:bold;margin-bottom:8px;">{arch['tabooChannel']}</div>
-    <div style="color:#888;font-size:12px;line-height:1.7;">{arch['tabooReason']}</div>
-  </div>
+            <table width="100%" border="0" cellspacing="0" cellpadding="16" style="background-color:#1a0f0f; border-left:2px solid #ff5555;margin-bottom:24px;">
+              <tr>
+                <td>
+                  <div style="color:#ff5555;font-size:11px;font-weight:bold;margin-bottom:8px;">[!] КОГНИТИВНОЕ ИСКАЖЕНИЕ: {arch['bias']}</div>
+                  <div style="color:#e0e0e0;font-size:12px;line-height:1.7;">{arch['biasDetail']}</div>
+                </td>
+              </tr>
+            </table>
 
-  <div style="background:rgba(255,85,85,0.05);border-left:2px solid #ff5555;padding:16px;margin-bottom:24px;">
-    <div style="color:#ff5555;font-size:11px;font-weight:bold;margin-bottom:8px;">[!] КОГНИТИВНОЕ ИСКАЖЕНИЕ: {arch['bias']}</div>
-    <div style="color:#888;font-size:12px;line-height:1.7;">{arch['biasDetail']}</div>
-  </div>
+            <table width="100%" border="0" cellspacing="0" cellpadding="16" style="background-color:#0f1a0f; border-left:2px solid #3a3a3a;margin-bottom:24px;">
+              <tr>
+                <td>
+                  <div style="color:#555;font-size:11px;font-weight:bold;margin-bottom:8px;">КАК ПОКУПАТЕЛЬ ПРИНИМАЕТ РЕШЕНИЕ: {arch['buyerMode']}</div>
+                  <div style="color:#e0e0e0;font-size:12px;line-height:1.7;">{arch['buyerDetail']}</div>
+                </td>
+              </tr>
+            </table>
 
-  <div style="background:rgba(85,255,85,0.03);border-left:2px solid #3a3a3a;padding:16px;margin-bottom:24px;">
-    <div style="color:#555;font-size:11px;font-weight:bold;margin-bottom:8px;">КАК ПОКУПАТЕЛЬ ПРИНИМАЕТ РЕШЕНИЕ: {arch['buyerMode']}</div>
-    <div style="color:#888;font-size:12px;line-height:1.7;">{arch['buyerDetail']}</div>
-  </div>
+            <div style="margin-bottom:24px;">
+              <div style="color:#555;font-size:11px;margin-bottom:8px;">── СДЕЛАЙТЕ ЭТО ДО ПЯТНИЦЫ ──────────────</div>
+              <div style="color:#e0e0e0;font-size:13px;line-height:1.8;">&rarr; {arch['redDoorTactics']}</div>
+            </div>
 
-  <div style="margin-bottom:24px;">
-    <div style="color:#555;font-size:11px;margin-bottom:8px;">── СДЕЛАЙТЕ ЭТО ДО ПЯТНИЦЫ ──────────────</div>
-    <div style="color:#e0e0e0;font-size:13px;line-height:1.8;">&rarr; {arch['redDoorTactics']}</div>
-  </div>
+            <div style="margin-bottom:32px;">
+              <div style="color:#555;font-size:11px;margin-bottom:8px;">── СИГНАЛ ЧЕРЕЗ 4 НЕДЕЛИ ────────────────</div>
+              <div style="color:#e0e0e0;font-size:13px;margin-bottom:6px;">{arch['week4metric']}</div>
+              <div style="color:#555;font-size:11px;">Если вместо этого вы видите: {arch['warningSignal']} — остановитесь и проведите диагностику, прежде чем продолжать.</div>
+            </div>
 
-  <div style="margin-bottom:32px;">
-    <div style="color:#555;font-size:11px;margin-bottom:8px;">── СИГНАЛ ЧЕРЕЗ 4 НЕДЕЛИ ────────────────</div>
-    <div style="color:#e0e0e0;font-size:13px;margin-bottom:6px;">{arch['week4metric']}</div>
-    <div style="color:#555;font-size:11px;">Если вместо этого вы видите: {arch['warningSignal']} — остановитесь и проведите диагностику, прежде чем продолжать.</div>
-  </div>
+            <table width="100%" border="0" cellspacing="0" cellpadding="20" style="background-color:#111; border:1px solid #2a2a2a;margin-bottom:32px;">
+              <tr>
+                <td>
+                  <div style="color:#e0e0e0;font-size:13px;font-weight:bold;margin-bottom:8px;">Канал — это только начало.</div>
+                  <div style="color:#e0e0e0;font-size:12px;line-height:1.7;margin-bottom:16px;">
+                    Венчурная экономика и стратегия роста для технических продуктов сложнее, чем просто выбор канала.<br><br>
+                    Если этот разбор оказался полезным, подписывайтесь на мой Telegram-канал. Я регулярно разбираю неочевидные механики позиционирования, GTM и B2B-роста для фаундеров-инженеров.
+                  </div>
+                  <a href="https://t.me/+dUhjcoLd8aMyMTdi" style="display:inline-block;background-color:#e0e0e0;color:#0d0c0b;font-family:inherit;font-size:13px;font-weight:bold;padding:10px 20px;text-decoration:none;">&rarr; Подписаться на Telegram-канал</a>
+                </td>
+              </tr>
+            </table>
 
-  <div style="background:rgba(255,255,255,0.03);border:1px solid #2a2a2a;padding:20px;margin-bottom:32px;">
-    <div style="color:#e0e0e0;font-size:13px;font-weight:bold;margin-bottom:8px;">Канал — это только 1-й слой из 11.</div>
-    <div style="color:#888;font-size:12px;line-height:1.7;margin-bottom:16px;">
-      Компас говорит вам, куда смотреть. Полный GTM-аудит идет глубже: позиционирование, месседжинг, ICP-fit, ценообразование, онбординг, конверсия — каждый слой диагностируется для вашего конкретного продукта и стадии, с бенчмарками и конкретными шагами.<br><br>
-      Это не общие советы. И не агентский ретейнер. Это 7-дневная асинхронная диагностика — созданная для технических фаундеров, которым нужно отладить свой go-to-market, а не нанимать кого-то, чтобы он делал это за них.
-    </div>
-    <a href="{payment_url}" style="display:inline-block;background:#e0e0e0;color:#0d0c0b;font-family:inherit;font-size:13px;font-weight:bold;padding:10px 20px;text-decoration:none;">&rarr; Начать полный GTM-аудит &nbsp;($500)</a>
-    <div style="color:#555;font-size:11px;margin-top:10px;">7 дней · асинхронно · гарантия возврата денег, если мы найдем меньше 5 критических разрывов</div>
-  </div>
-
-  <div style="color:#444;font-size:11px;border-top:1px solid #1e1e1e;padding-top:16px;">
-    God Dev it &nbsp;·&nbsp; GTM для технических фаундеров<br>
-    Ответьте на это письмо — вопросы, возражения или если кажется, что архетип определен неверно.<br><br>
-    <a href="{_unsubscribe_url(email)}" style="color:#444;font-size:10px;text-decoration:underline;">Отписаться</a>
-  </div>
-
-</div>
+            <div style="color:#555;font-size:11px;border-top:1px solid #1e1e1e;padding-top:16px;">
+              God Dev it &nbsp;·&nbsp; GTM для технических фаундеров<br>
+              Ответьте на это письмо — вопросы, возражения или если кажется, что архетип определен неверно.<br><br>
+              <a href="{_unsubscribe_url(email)}" style="color:#555;font-size:10px;text-decoration:underline;">Отписаться</a>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
 </body>
 </html>"""
 

@@ -37,18 +37,22 @@ class GtmLeadRepository:
             .first()
         )
 
-    def upsert(self, email: str, score: Optional[int], findings: dict) -> GtmLead:
-        """Create lead if not exists, otherwise update score/findings."""
+    def upsert(self, email: str, name: Optional[str] = None, archetype: Optional[str] = None, compass_answers: Optional[dict] = None, source_product: Optional[str] = None, score: Optional[int] = None, findings: Optional[dict] = None) -> GtmLead:
+        """Create or update a lead record."""
         lead = self.get_by_email(email)
         if lead:
-            lead.score = score
-            lead.findings = findings
+            if name: lead.name = name
+            if archetype: lead.archetype = archetype
+            if compass_answers: lead.compass_answers = compass_answers
+            if source_product: lead.source_product = source_product
             self.db.commit()
             self.db.refresh(lead)
             return lead
         return self.create(
             email=email.lower().strip(),
-            score=score,
-            findings=findings,
+            name=name,
+            archetype=archetype,
+            compass_answers=compass_answers,
+            source_product=source_product or "channel-compass",
             status="lead",
         )
