@@ -261,8 +261,6 @@ const state = {
     answers: {},
     questionPath: [],
     archetypeId: null,
-    aiDiagnosis: null,
-    aiWeek1Override: null,
     email: '',
     name: ''
 };
@@ -375,61 +373,7 @@ function updateProgress(currentQ) {
     dom.progressBar.style.display = 'block';
 }
 
-// ─── LLM API ───────────────────────────────────────────────────────────────────
-async function callLLM(archetypeId, answers) {
-    const arch = ARCHETYPES[archetypeId];
-    const stageMap = { A: '0–10 юзеров', B: '10–100 юзеров', C: '100+ юзеров' };
-    const founderSkill = answers.Q2 === 'A' ? 'Билдер (код-центричный)' : answers.Q2 === 'B' ? 'Райтер (контент-центричный)' : 'Нетворкер (связи-центричный)';
-    const stage = stageMap[answers.Q8] || 'неизвестно';
 
-    const lang = t('llm_lang');
-    const prompt = `You are a GTM strategist for technical founders. Be specific, direct, use founder language. No marketing speak.
-IMPORTANT: Respond in ${lang}.
-
-Founder profile:
-- Archetype: ${arch.name} (${arch.tagline})
-- Founder skill: ${founderSkill}
-- Growth stage: ${stage}
-- Recommended channel: ${arch.primaryChannel}
-- Channel to avoid: ${arch.tabooChannel}
-
-Return a valid JSON object ONLY — no markdown, no explanation:
-{
-  "diagnosis": "Одна фраза, описывающая их самую вероятную текущую GTM-ошибку. Начни с 'Вы...'. Будь конкретен относительно их архетипа.",
-  "week1": ["конкретное действие 1", "конкретное действие 2", "конкретное действие 3"]
-}
-
-Сделай действия на Неделю 1 максимально конкретными. Названия инструментов, каналов, конкретные цифры и объемы.`;
-
-    async function callModel(model) {
-        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-                'Content-Type': 'application/json',
-                'HTTP-Referer': window.location.origin,
-                'X-Title': 'GTM Channel Compass'
-            },
-            body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], temperature: 0.2, max_tokens: 500 })
-        });
-        if (!res.ok) throw new Error(`API ${res.status}`);
-        const data = await res.json();
-        if (data.error) throw new Error(data.error.message);
-        return data.choices[0]?.message?.content?.trim();
-    }
-
-    let content;
-    try {
-        content = await callModel(OPENROUTER_MODEL);
-    } catch(e) {
-        content = await callModel(OPENROUTER_MODEL_FALLBACK);
-    }
-
-    const match = content.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('No JSON');
-    const parsed = JSON.parse(match[0]);
-    return parsed;
-}
 
 // ─── State Machine ────────────────────────────────────────────────────────────
 async function transition(step, payload) {
@@ -697,8 +641,7 @@ function renderResult() {
     dom.screen.innerHTML = '';
     const arch      = ARCHETYPES[state.archetypeId];
     const stageCost = STAGE_COSTS[state.answers.Q8] || STAGE_COSTS.A;
-    const diagnosis = state.aiDiagnosis || `Your GTM strategy likely suffers from ${arch.bias.split(' ')[0]} — optimizing the wrong variables for your stage.`;
-    const week1     = state.aiWeek1Override || (arch.week1 ? arch.week1 : [arch.redDoorTactics, "Identify your top 5 competitors’ keywords.", "Draft one ‘Conflict-first’ post."]);
+    const week1     = arch.week1 ? arch.week1 : [arch.redDoorTactics, "Идентифицируйте топ-5 конкурентов", "Подготовьте первый 'Conflict-first' пост."];
 
     const block = document.createElement('div');
     block.className = 'result-block';
